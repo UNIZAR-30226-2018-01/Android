@@ -48,7 +48,7 @@ public class SongList extends ListActivity {
         // selecting single ListView item
         ListView lv = getListView();
         // listening to single listitem click
-        /*
+
         lv.setOnItemClickListener(new OnItemClickListener() {
 
             @Override
@@ -58,15 +58,14 @@ public class SongList extends ListActivity {
                 int songIndex = position;
 
                 // Starting new intent
-                Intent in = new Intent(getApplicationContext(),
-                        AndroidBuildingMusicPlayerActivity.class);
+                Intent in = new Intent(getApplicationContext(), PlayerActivity.class);
                 // Sending songIndex to PlayerActivity
                 in.putExtra("songIndex", songIndex);
                 setResult(100, in);
                 // Closing PlayListView
                 finish();
             }
-        });*/
+        });
 
     }
 }
