@@ -20,17 +20,20 @@
         android:id="@+id/loginbutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/txtPassword"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="40dp"
+        android:layout_marginTop="24dp"
         android:text="LOGIN" />
 
     <EditText
         android:id="@+id/txtPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/txtUsername"
-        android:layout_centerHorizontal="true"
+        android:layout_alignLeft="@+id/imageView"
+        android:layout_alignStart="@+id/imageView"
+        android:layout_below="@+id/textView"
+        android:layout_marginLeft="12dp"
+        android:layout_marginStart="12dp"
         android:ems="10"
         android:inputType="textPassword" />
 
@@ -39,8 +42,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/txtPassword"
+        android:layout_alignParentBottom="true"
         android:layout_alignStart="@+id/txtPassword"
-        android:layout_below="@+id/imageView"
+        android:layout_marginBottom="141dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:text="" />

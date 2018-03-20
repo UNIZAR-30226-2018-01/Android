@@ -14,7 +14,7 @@ import android.widget.SimpleAdapter;
 
 import com.example.carlos.mewat.helper.SongsManager;
 
-public class SongList extends ListActivity {
+public class PlayListActivity extends ListActivity {
     // Songs list
     public ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 

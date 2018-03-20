@@ -13,7 +13,6 @@ import java.util.HashMap;
 
 public class SongsManager {
     // SDCard Path
-    final String MEDIA_PATH = Environment.getExternalStorageDirectory().getPath();
     private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
     // Constructor
@@ -26,13 +25,8 @@ public class SongsManager {
      * and store the details in ArrayList
      * */
     public ArrayList<HashMap<String, String>> getPlayList(){
-        File home = new File(MEDIA_PATH);
-        File [] listedFiles = home.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File file, String s) {
-                return (s.endsWith(".mp3") || s.endsWith(".MP3"));
-            }
-        });
+        File home = Environment.getExternalStorageDirectory();
+        File [] listedFiles = home.listFiles(new FileExtensionFilter());
 
         if ((listedFiles != null) && listedFiles.length > 0) {
             for (File file : listedFiles) {
@@ -40,7 +34,7 @@ public class SongsManager {
                 song.put("songTitle", file.getName().substring(0, (file.getName().length() - 4)));
                 song.put("songPath", file.getPath());
 
-                // Adding each song to SongList
+                // Adding each song to PlayListActivity
                 songsList.add(song);
             }
         }
