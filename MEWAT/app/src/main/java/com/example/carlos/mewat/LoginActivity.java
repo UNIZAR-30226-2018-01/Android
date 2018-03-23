@@ -9,9 +9,15 @@ import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 
 public class LoginActivity extends Activity {
+
+    TextView signup;
+    EditText txtPass;
+    EditText txtUsername;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,20 +27,30 @@ public class LoginActivity extends Activity {
 
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_inicio_app);
+        setContentView(R.layout.activity_login);
 
-        final EditText txtUsername = this.findViewById(R.id.txtUsername);
-        final EditText txtPass = this.findViewById(R.id.txtPassword);
+        txtUsername = this.findViewById(R.id.txtUsername);
+        txtPass = this.findViewById(R.id.txtPassword);
+        signup =this.findViewById(R.id.signup);
         Button btnLogin = this.findViewById(R.id.loginbutton);
         btnLogin.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 if (validar(txtUsername.getText().toString(), txtPass.getText().toString())){
-                    Intent Main = new Intent(getApplicationContext(), PlayListActivity.class);
-                    startActivity(Main);
+                    Intent PlayListActivity = new Intent(getApplicationContext(), PlayListActivity.class);
+                    startActivity(PlayListActivity);
                 }
             }
         });
+
+        signup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent SignUpActivity = new Intent(getApplicationContext(), SignUpActivity.class);
+                startActivity(SignUpActivity);
+            }
+        });
+
 
     }
 

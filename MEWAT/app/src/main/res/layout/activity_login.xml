@@ -10,11 +10,12 @@
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="185dp"
-        android:layout_height="371dp"
-        android:layout_alignParentTop="true"
+        android:layout_height="300dp"
+        android:layout_above="@+id/txtUsername"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="38dp"
-        app:srcCompat="@mipmap/logoapp"/>
+        android:layout_marginBottom="20dp"
+        android:contentDescription="@string/no_estoy_registrado"
+        android:src="@mipmap/logoapp" />
 
     <Button
         android:id="@+id/loginbutton"
@@ -22,18 +23,16 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/txtPassword"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="24dp"
-        android:text="LOGIN" />
+        android:layout_marginTop="8dp"
+        android:text="@string/login" />
 
     <EditText
         android:id="@+id/txtPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/imageView"
-        android:layout_alignStart="@+id/imageView"
-        android:layout_below="@+id/textView"
-        android:layout_marginLeft="12dp"
-        android:layout_marginStart="12dp"
+        android:layout_alignLeft="@+id/txtUsername"
+        android:layout_alignStart="@+id/txtUsername"
+        android:layout_below="@+id/userText"
         android:ems="10"
         android:inputType="textPassword" />
 
@@ -41,35 +40,46 @@
         android:id="@+id/txtUsername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/txtPassword"
+        android:layout_alignLeft="@+id/imageView"
         android:layout_alignParentBottom="true"
-        android:layout_alignStart="@+id/txtPassword"
-        android:layout_marginBottom="141dp"
+        android:layout_alignStart="@+id/imageView"
+        android:layout_marginBottom="177dp"
         android:ems="10"
         android:inputType="textPersonName"
         android:text="" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/userText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/txtUsername"
         android:layout_alignBottom="@+id/txtUsername"
-        android:layout_alignLeft="@+id/textView2"
-        android:layout_alignStart="@+id/textView2"
-        android:text="User" />
+        android:layout_alignLeft="@+id/passText"
+        android:layout_alignStart="@+id/passText"
+        android:text="@string/user" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/passText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBaseline="@+id/txtPassword"
         android:layout_alignBottom="@+id/txtPassword"
-        android:layout_toLeftOf="@+id/txtPassword"
-        android:layout_toStartOf="@+id/txtPassword"
-        android:text="Password" />
+        android:layout_toLeftOf="@+id/txtUsername"
+        android:layout_toStartOf="@+id/txtUsername"
+        android:text="@string/password" />
 
-
+    <TextView
+        android:id="@+id/signup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/loginbutton"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="18dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:onClick="onClick"
+        android:text="@string/no_estoy_registrado" />
 
 
 </RelativeLayout>

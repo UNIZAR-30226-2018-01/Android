@@ -26,6 +26,11 @@ public class SongsManager {
      * */
     public ArrayList<HashMap<String, String>> getPlayList(){
         File home = Environment.getExternalStorageDirectory();
+        boolean hola;
+        hola =home.isDirectory();
+        hola =home.isFile();
+        hola =home.exists();
+        hola = home.canRead();
         File [] listedFiles = home.listFiles(new FileExtensionFilter());
 
         if ((listedFiles != null) && listedFiles.length > 0) {

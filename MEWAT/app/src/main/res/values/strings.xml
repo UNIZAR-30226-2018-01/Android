@@ -22,4 +22,9 @@
     <string name="playButton">Play Button</string>
     <string name="skip_next">Skip Next</string>
     <string name="skip_previous">Skip Previous</string>
+    <string name="login">LOGIN</string>
+    <string name="password">Password</string>
+    <string name="no_estoy_registrado">No estoy registrado</string>
+    <string name="user">User</string>
+    <string name="title_activity_sign_up">Sign Up</string>
 </resources>
