@@ -106,11 +106,9 @@
         android:id="@+id/btnShuffle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/btnPlaylist"
+        android:layout_alignRight="@+id/btnPlaylist"
         android:layout_alignTop="@+id/btnNext"
-        android:layout_marginLeft="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_toEndOf="@+id/btnNext"
-        android:layout_toRightOf="@+id/btnNext"
         app:srcCompat="@drawable/ic_shuffle_black_24dp" />
 
     <!-- Play Button -->
