@@ -26,13 +26,8 @@ public class SongsManager {
      * */
     public ArrayList<HashMap<String, String>> getPlayList(){
         File home = Environment.getExternalStorageDirectory();
-        boolean hola;
-        hola =home.isDirectory();
-        hola =home.isFile();
-        hola =home.exists();
-        hola = home.canRead();
-        File [] listedFiles = home.listFiles(new FileExtensionFilter());
 
+        File [] listedFiles = reclistFile(home);
         if ((listedFiles != null) && listedFiles.length > 0) {
             for (File file : listedFiles) {
                 HashMap<String, String> song = new HashMap<String, String>();
@@ -47,12 +42,27 @@ public class SongsManager {
         return songsList;
     }
 
-    /**
-     * Class to filter files which are having .mp3 extension
-     * */
-    class FileExtensionFilter implements FilenameFilter {
-        public boolean accept(File dir, String name) {
-            return (name.endsWith(".mp3") || name.endsWith(".MP3"));
+    File [] reclistFile( File path ){
+        ArrayList <File> saved = new ArrayList<>();
+        for (File file : path.listFiles()){
+            if (file.isDirectory()){
+                saved.addAll(reclistFile2(file));
+            }
+            if (file.getName().endsWith(".mp3")) saved.add(file);
         }
+        return saved.toArray(new File[saved.size()]);
     }
+
+    ArrayList <File> reclistFile2( File path ){
+        ArrayList <File> saved = new ArrayList<>();
+        for (File file : path.listFiles()){
+            if (file.isDirectory()){
+                saved.addAll(reclistFile2(file));
+            }
+            else if (file.getName().endsWith(".mp3")) saved.add(file);
+        }
+        return saved;
+    }
+
+
 }

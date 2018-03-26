@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.percent.PercentRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -31,8 +31,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignTop="@+id/songTitle"
-        android:layout_toEndOf="@+id/album_thumbnail"
-        android:layout_toRightOf="@+id/album_thumbnail"
+        android:layout_toEndOf="@+id/btnNext"
+        android:layout_toRightOf="@+id/btnNext"
         app:srcCompat="@drawable/ic_queue_music_black_24dp" />
 
 
@@ -94,11 +94,9 @@
         android:id="@+id/btnRepeat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/btnPrevious"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_marginLeft="17dp"
-        android:layout_marginStart="17dp"
+        android:layout_alignTop="@+id/btnPrevious"
+        android:layout_toLeftOf="@+id/btnPrevious"
+        android:layout_toStartOf="@+id/btnPrevious"
         app:srcCompat="@drawable/ic_repeat_black_24dp" />
 
     <!-- Shuffle Button -->
@@ -106,9 +104,9 @@
         android:id="@+id/btnShuffle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignEnd="@+id/btnPlaylist"
-        android:layout_alignRight="@+id/btnPlaylist"
+        android:layout_toRightOf="@+id/btnNext"
         android:layout_alignTop="@+id/btnNext"
+        android:layout_toEndOf="@+id/btnNext"
         app:srcCompat="@drawable/ic_shuffle_black_24dp" />
 
     <!-- Play Button -->
@@ -118,7 +116,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="39dp"
+        android:layout_marginBottom="48dp"
         android:contentDescription="@string/playButton"
         app:srcCompat="@drawable/ic_play_circle_filled_black_24dp" />
 
@@ -128,8 +126,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/btnPlay"
-        android:layout_toEndOf="@+id/albumTitle"
-        android:layout_toRightOf="@+id/albumTitle"
+        android:layout_toEndOf="@+id/btnPlay"
+        android:layout_toRightOf="@+id/btnPlay"
         android:contentDescription="@string/skip_next"
         app:srcCompat="@drawable/ic_skip_next_black_24dp" />
 
@@ -139,13 +137,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/btnPlay"
-        android:layout_marginEnd="7dp"
-        android:layout_marginRight="7dp"
-        android:layout_toLeftOf="@+id/albumTitle"
-        android:layout_toStartOf="@+id/albumTitle"
+        android:layout_toLeftOf="@+id/btnPlay"
+        android:layout_toStartOf="@+id/btnPlay"
         android:contentDescription="@string/skip_previous"
         app:srcCompat="@drawable/ic_skip_previous_black_24dp" />
 
 
 
-</RelativeLayout>
+</android.support.percent.PercentRelativeLayout>

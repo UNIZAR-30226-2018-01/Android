@@ -5,6 +5,7 @@ import java.util.HashMap;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -26,6 +27,7 @@ public class PlayListActivity extends ListActivity {
         ArrayList<HashMap<String, String>> songsListData = new ArrayList<HashMap<String, String>>();
 
         SongsManager plm = new SongsManager();
+
         // get all songs from sdcard
         this.songsList = plm.getPlayList();
 
@@ -62,7 +64,6 @@ public class PlayListActivity extends ListActivity {
                 // Sending songIndex to PlayerActivity
                 in.putExtra("songIndex", songIndex);
                 setResult(100, in);
-                // Closing PlayListView
                 finish();
             }
         });
