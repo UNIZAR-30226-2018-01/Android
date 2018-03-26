@@ -41,8 +41,9 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
     private Handler mHandler = new Handler();;
     private SongsManager songManager;
     private Utilities utils;
+    private int seekForwardTime = 5000; // 5000 milliseconds
+    private int seekBackwardTime = 5000; // 5000 milliseconds
     private int currentSongIndex = 0;
-    private int previousSongIndex = 0;
     private boolean isShuffle = false;
     private int isRepeat = 0;
     private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
@@ -70,23 +71,12 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
         songManager = new SongsManager();
         utils = new Utilities();
 
-        btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-        btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
-        btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
-        btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
-        btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
-        btnPlaylist.setImageResource(R.drawable.ic_queue_music_black_24dp);
-
         // Listeners
         songProgressBar.setOnSeekBarChangeListener(this); // Important
         mp.setOnCompletionListener(this); // Important
 
         // Getting all songs list
         songsList = songManager.getPlayList();
-        currentSongIndex= getIntent().getIntExtra("songIndex",0);
-
-        playSong(currentSongIndex);
-
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
 
@@ -122,14 +112,7 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
             @Override
             public void onClick(View arg0) {
                 // check if next song is there or not
-
-                if(isShuffle) {
-                    // shuffle is on - play a random song
-                    Random rand = new Random();
-                    previousSongIndex = currentSongIndex;
-                    currentSongIndex = rand.nextInt((songsList.size() - 1) - 0 + 1) + 0;
-                    playSong(currentSongIndex);
-                }else if(currentSongIndex < (songsList.size() - 1)){
+                if(currentSongIndex < (songsList.size() - 1)){
                     playSong(currentSongIndex + 1);
                     currentSongIndex = currentSongIndex + 1;
                 }else{
@@ -149,11 +132,7 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
 
             @Override
             public void onClick(View arg0) {
-                if(isShuffle) {
-                    playSong(previousSongIndex);
-                    currentSongIndex=previousSongIndex;
-                }
-                else if(currentSongIndex > 0){
+                if(currentSongIndex > 0){
                     playSong(currentSongIndex - 1);
                     currentSongIndex = currentSongIndex - 1;
                 }else{
@@ -221,7 +200,7 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
             @Override
             public void onClick(View arg0) {
                 Intent i = new Intent(getApplicationContext(), PlayListActivity.class);
-                startActivityForResult(i,100);
+                startActivityForResult(i, 100);
             }
         });
 
@@ -246,13 +225,6 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
 
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        currentSongIndex = getIntent().getExtras().getInt("songIndex",currentSongIndex);
-        // play selected song
-        playSong(currentSongIndex);
-    }
 
     /**
      * Function to play a song

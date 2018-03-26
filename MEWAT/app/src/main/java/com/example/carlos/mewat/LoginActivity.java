@@ -57,6 +57,4 @@ public class LoginActivity extends Activity {
     protected boolean validar(String username, String pass){
         return username.equals("1") && pass.equals("2");
     }
-
-
 }
