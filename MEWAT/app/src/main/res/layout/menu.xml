@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.carlos.mewat.LoginActivity"
+    tools:layout_editor_absoluteY="25dp">
+
+    <EditText
+        android:id="@+id/buscar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="69dp"
+        android:layout_marginStart="69dp"
+        android:layout_marginTop="11dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        android:text="" />
+
+    <EditText
+        android:id="@+id/separador1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/imageView2"
+        android:layout_marginTop="13dp"
+        android:singleLine="true" />
+
+    <EditText
+        android:id="@+id/separador2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignTop="@+id/imageView3"
+        android:layout_marginTop="12dp"
+        android:singleLine="true" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/buscar"
+        android:layout_toEndOf="@+id/buscar"
+        android:layout_toRightOf="@+id/buscar"
+        android:src="@drawable/ic_search_black_24dp" />
+
+    <TextView
+        android:id="@+id/usuario"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/separador2"
+        android:layout_centerHorizontal="true"
+
+        android:text="aqui_ira_el_nombre" />
+
+    <ImageView
+        android:id="@+id/imageView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/buscar"
+        android:layout_alignStart="@+id/buscar"
+        android:layout_below="@+id/separador1"
+        android:layout_marginTop="13dp"
+        android:src="@drawable/ic_person_black_24dp" />
+
+
+</RelativeLayout>
