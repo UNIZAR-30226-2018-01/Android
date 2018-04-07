@@ -23,7 +23,7 @@ public class LoginActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
 
         int returnespermission = 0;
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, returnespermission);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, returnespermission);
 
 
         super.onCreate(savedInstanceState);
@@ -39,6 +39,7 @@ public class LoginActivity extends Activity {
                 if (validar(txtUsername.getText().toString(), txtPass.getText().toString())){
                     Intent PlayListActivity = new Intent(getApplicationContext(), PlayListActivity.class);
                     startActivity(PlayListActivity);
+                    finish();
                 }
             }
         });
