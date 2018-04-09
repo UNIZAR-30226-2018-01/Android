@@ -1,7 +1,9 @@
 package com.f22labs.instalikefragmenttransaction.fragments;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,7 +12,11 @@ import android.widget.Button;
 import com.f22labs.instalikefragmenttransaction.R;
 import com.f22labs.instalikefragmenttransaction.activities.MainActivity;
 
+import java.io.File;
+
 import butterknife.ButterKnife;
+
+import static android.app.Activity.RESULT_OK;
 
 
 public class UploadFragment extends BaseFragment{
@@ -38,11 +44,16 @@ public class UploadFragment extends BaseFragment{
         selmusicbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent();
-                intent.setType("music/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                startActivityForResult(Intent.createChooser(intent, "Select Music"), PICK_MUSIC);
+                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                getIntent.setType("audio/*");
 
+                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
+                pickIntent.setType("audio/*");
+
+                Intent chooserIntent = Intent.createChooser(getIntent, "Select Song");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
+
+                startActivityForResult(chooserIntent, PICK_MUSIC);
             }
         });
         confirmButton =  (Button) view.findViewById(R.id.btn_confirm_list);
@@ -54,6 +65,19 @@ public class UploadFragment extends BaseFragment{
 
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == PICK_MUSIC) {
+            if (resultCode == RESULT_OK){
+                Uri file = data.getData();
+            }
+
+
+
+        }
     }
 
 
