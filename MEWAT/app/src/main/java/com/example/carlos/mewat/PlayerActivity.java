@@ -41,8 +41,6 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
     private Handler mHandler = new Handler();;
     private SongsManager songManager;
     private Utilities utils;
-    private int seekForwardTime = 5000; // 5000 milliseconds
-    private int seekBackwardTime = 5000; // 5000 milliseconds
     private int currentSongIndex = 0;
     private boolean isShuffle = false;
     private int isRepeat = 0;

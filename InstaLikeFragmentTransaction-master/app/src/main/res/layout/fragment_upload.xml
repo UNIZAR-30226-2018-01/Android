@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="bottom">
+
+
+    <Button
+        android:id="@+id/btn_select_music"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Seleccionar musica" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="480dp" />
+
+    <Button
+        android:id="@+id/btn_confirm_list"
+        android:layout_width="match_parent"
+        android:layout_height="41dp"
+        android:text="CONFIRMAR" />
+
+
+
+</LinearLayout>

@@ -2,6 +2,8 @@ package com.example.carlos.mewat;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import android.app.Fragment;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +16,7 @@ import android.widget.SimpleAdapter;
 
 import com.example.carlos.mewat.helper.SongsManager;
 
-public class PlayListActivity extends ListActivity {
+public class PlayListActivity extends ListActivity{
     // Songs list
     public ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
