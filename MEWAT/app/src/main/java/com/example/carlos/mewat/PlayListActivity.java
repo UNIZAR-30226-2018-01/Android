@@ -64,7 +64,6 @@ public class PlayListActivity extends ListActivity{
                 // Sending songIndex to PlayerActivity
                 in.putExtra("songIndex", songIndex);
                 setResult(100, in);
-                startActivityIfNeeded(in,100);
                 // Closing PlayListView
                 finish();
             }

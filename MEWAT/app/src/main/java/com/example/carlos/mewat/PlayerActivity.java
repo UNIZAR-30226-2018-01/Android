@@ -67,6 +67,13 @@ public class PlayerActivity extends Activity implements MediaPlayer.OnCompletion
         // Mediaplayer
         mp = new MediaPlayer();
         songManager = new SongsManager();
+        btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
+        btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+        btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
+        btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
+        btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
+        btnPlaylist.setImageResource(R.drawable.ic_queue_music_black_24dp);
+
         utils = new Utilities();
 
         // Listeners

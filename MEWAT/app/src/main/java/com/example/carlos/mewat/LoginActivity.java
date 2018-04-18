@@ -37,7 +37,7 @@ public class LoginActivity extends Activity {
             @Override
             public void onClick(View v){
                 if (validar(txtUsername.getText().toString(), txtPass.getText().toString())){
-                    Intent PlayListActivity = new Intent(getApplicationContext(), PlayListActivity.class);
+                    Intent PlayListActivity = new Intent(getApplicationContext(), PlayerActivity.class);
                     startActivity(PlayListActivity);
                     finish();
                 }
