@@ -1,8 +1,12 @@
 package com.csd.MeWaT.activities;
 
 import android.app.Activity;
+import android.app.Presentation;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
@@ -12,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
@@ -23,6 +28,8 @@ import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
+
+import java.util.prefs.Preferences;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -54,7 +61,6 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     TabLayout bottomTabLayout;
 
     static final int USER_AUTH = 1;
-    private boolean userAuthed;
     private FragNavController mNavController;
 
 
@@ -65,9 +71,12 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        userAuthed = false;
-        while (!userAuthed){      // Cambiar por sharedpreference usuario logueado
-            Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        boolean userAuthed = sp.getBoolean("userAuthed",false);
+
+
+        if (!userAuthed){      // Cambiar por sharedpreference usuario logueado
+            Intent LoginActivity = new Intent(this, LoginActivity.class);
             this.startActivityForResult(LoginActivity,USER_AUTH);
         }
 
@@ -324,13 +333,21 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == USER_AUTH){
+            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
             if(resultCode == Activity.RESULT_OK){
-                userAuthed = true;
-            }
-            if(resultCode == Activity.RESULT_CANCELED){
-                userAuthed = false;
-            }
+                p.edit().putBoolean("userAuthed",true);
+                String s = data.getStringExtra("idSesion");
+                String us = data.getStringExtra("user");
 
+                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT);
+                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT);
+            }
+            if(resultCode != Activity.RESULT_OK ){
+                Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
+                this.startActivityForResult(LoginActivity,USER_AUTH);
+                p.edit().putBoolean("userAuthed",false);
+            }
+            p.edit().commit();
         }
     }
 }

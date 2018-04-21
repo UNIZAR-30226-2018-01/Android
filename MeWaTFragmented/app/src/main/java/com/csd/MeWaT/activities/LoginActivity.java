@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.text.TextUtils;
+import android.util.JsonReader;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -31,10 +32,26 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.csd.MeWaT.R;
+
+import org.json.JSONObject;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -65,6 +82,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private EditText mPasswordView;
     private View mProgressView;
     private View mLoginFormView;
+    private String idSesion,Username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -196,7 +214,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean isUserValid(String User) {
         //TODO: Replace this with your own logic
-        return User.contains("@");
+        return User.length() > 4;
     }
 
     private boolean isPasswordValid(String password) {
@@ -311,21 +329,67 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
-
+            URL url;
+            HttpURLConnection client = null;
+            InputStream inputStream;
+            JSONObject ResponseData;
+            String title, info;
             try {
-                // Simulate network access.
+                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion/");
+                client = (HttpURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("nombre",mUser);
+                client.setRequestProperty("hashPass",md5(mPassword));
+                client.setDoOutput(true);
+
                 Thread.sleep(2000);
-            } catch (InterruptedException e) {
+                OutputStream outputPost = new BufferedOutputStream(client.getOutputStream());
+                outputPost.flush();
+                outputPost.close();
+
+                inputStream = new BufferedInputStream(client.getInputStream());
+                InputStreamReader isr = new InputStreamReader(inputStream, "UTF-8");
+                JsonReader reader = new JsonReader(isr);
+                try {
+                    reader.beginArray();
+                    while(reader.hasNext()){
+                        title = reader.nextName();
+                        if(!title.equals("error")){
+                            if(title.equals("login")){
+                                info=reader.nextString();
+                                if(title.equals("idSesion")){
+                                    info=reader.nextString();
+                                }else{
+                                    return false;
+                                }
+                                reader.endObject();
+                            }else {
+                                reader.endObject();
+                                return false;
+                            }
+                        }else{
+                            reader.endObject();
+                            return false;
+                        }
+                    }
+                }finally {
+                    if(client != null){
+                        client.disconnect();
+                    }
+                    reader.close();
+                }
+            } catch (MalformedURLException e) {
                 return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            } catch (InterruptedException e){
+                return false;
+            }catch (IOException e) {
+                return false;
+            }finally {
+
             }
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mUser)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
 
             // TODO: register the new account here.
             return true;
@@ -338,6 +402,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
             if (success) {
                 Intent returnIntent = new Intent();
+                returnIntent.putExtra("idSesion",idSesion);
+                returnIntent.putExtra("user",Username);
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             } else {
@@ -351,6 +417,24 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = null;
             showProgress(false);
         }
+    }
+    public String md5(String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i=0; i<messageDigest.length; i++)
+                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }
 
