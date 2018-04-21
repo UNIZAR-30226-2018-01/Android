@@ -35,19 +35,24 @@ import android.widget.TextView;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.csd.MeWaT.R;
 
@@ -214,12 +219,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean isUserValid(String User) {
         //TODO: Replace this with your own logic
-        return User.length() > 4;
+        return User.length() >= 4;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() > 4;
+        return password.length() >= 4;
     }
 
     /**
@@ -331,64 +336,65 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             // TODO: attempt authentication against a network service.
             URL url;
             HttpURLConnection client = null;
-            InputStream inputStream;
+            InputStreamReader inputStream;
             JSONObject ResponseData;
-            String title, info;
+            String title,info1;InputStream info;
+
+
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion/");
+                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion");
+
                 client = (HttpURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("nombre",mUser);
-                client.setRequestProperty("hashPass",md5(mPassword));
+                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
                 client.setDoOutput(true);
 
-                Thread.sleep(2000);
-                OutputStream outputPost = new BufferedOutputStream(client.getOutputStream());
-                outputPost.flush();
-                outputPost.close();
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("nombre", mUser)
+                        .appendQueryParameter("contrasenya", mPassword);
+                String query = builder.build().getEncodedQuery();
 
-                inputStream = new BufferedInputStream(client.getInputStream());
-                InputStreamReader isr = new InputStreamReader(inputStream, "UTF-8");
-                JsonReader reader = new JsonReader(isr);
-                try {
-                    reader.beginArray();
-                    while(reader.hasNext()){
-                        title = reader.nextName();
-                        if(!title.equals("error")){
-                            if(title.equals("login")){
-                                info=reader.nextString();
-                                if(title.equals("idSesion")){
-                                    info=reader.nextString();
-                                }else{
-                                    return false;
-                                }
-                                reader.endObject();
-                            }else {
-                                reader.endObject();
-                                return false;
-                            }
-                        }else{
-                            reader.endObject();
-                            return false;
-                        }
-                    }
-                }finally {
-                    if(client != null){
-                        client.disconnect();
-                    }
-                    reader.close();
-                }
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
             } catch (MalformedURLException e) {
                 return false;
             } catch (SocketTimeoutException e) {
                 return false;
-            } catch (InterruptedException e){
-                return false;
             }catch (IOException e) {
+                info = client.getErrorStream();
                 return false;
-            }finally {
 
             }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+                ;
+                JsonReader reader = new JsonReader(inputStream);
+                reader.beginArray();
+                boolean red = reader.hasNext();
+                while (reader.hasNext()) {
+                    title = reader.nextName();
+                    if (!title.equals("error")) {
+                        if (title.equals("idSesion")) {
+                            info1 = reader.nextString();
+                        } else {
+                            return false;
+                        }
+                        reader.endObject();
+                    } else {
+                        reader.endObject();
+                        return false;
+                    }
+                }
+            }catch (IOException e){
+                Throwable s = e.getCause();
+            }
+
 
 
             // TODO: register the new account here.
