@@ -56,7 +56,10 @@ import java.util.Map;
 
 import com.csd.MeWaT.R;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.w3c.dom.Text;
 
 import static android.Manifest.permission.READ_CONTACTS;
 
@@ -85,6 +88,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     // UI references.
     private AutoCompleteTextView mUserView;
     private EditText mPasswordView;
+    private TextView notRegistered;
     private View mProgressView;
     private View mLoginFormView;
     private String idSesion,Username;
@@ -114,6 +118,14 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        notRegistered = (TextView) findViewById(R.id.link_signup);
+        notRegistered.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //startActivityForResult();   REGISTRARSE
             }
         });
 
@@ -337,7 +349,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             URL url;
             HttpURLConnection client = null;
             InputStreamReader inputStream;
-            JSONObject ResponseData;
             String title,info1;InputStream info;
 
 
@@ -373,31 +384,34 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                ;
-                JsonReader reader = new JsonReader(inputStream);
-                reader.beginArray();
-                boolean red = reader.hasNext();
-                while (reader.hasNext()) {
-                    title = reader.nextName();
-                    if (!title.equals("error")) {
-                        if (title.equals("idSesion")) {
-                            info1 = reader.nextString();
-                        } else {
-                            return false;
-                        }
-                        reader.endObject();
-                    } else {
-                        reader.endObject();
-                        return false;
-                    }
+                client.disconnect();
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
                 }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                if (!result.has("error")){
+                    Username = (String) result.get("login");
+                    idSesion = (String) result.get("idSesion");
+                }else{
+                    return false;
+                }
+
+
             }catch (IOException e){
                 Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
             }
-
-
-
-            // TODO: register the new account here.
             return true;
         }
 
