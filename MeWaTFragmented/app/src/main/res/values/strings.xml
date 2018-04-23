@@ -22,6 +22,15 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing User
         completions."
     </string>
+    <string name="no_song">No hay canciones</string>
+    <string name="title_activity_player">PlayerActivity</string>
+    <string name="songTitle">Unknown Song</string>
+    <string name="songAlbum">Unknown Album</string>
+    <string name="album_thumbnail">Album thumbnail</string>
+    <string name="playButton">Play Button</string>
+    <string name="skip_next">Skip Next</string>
+    <string name="skip_previous">Skip Previous</string>
+
 
 
 </resources>

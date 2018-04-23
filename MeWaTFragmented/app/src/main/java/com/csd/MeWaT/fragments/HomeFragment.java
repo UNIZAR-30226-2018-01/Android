@@ -1,6 +1,8 @@
 package com.csd.MeWaT.fragments;
 
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +24,7 @@ public class HomeFragment extends BaseFragment {
 
     @BindView(R.id.btn_click_me)
     Button btnClickMe;
+
 
     int fragCount;
 

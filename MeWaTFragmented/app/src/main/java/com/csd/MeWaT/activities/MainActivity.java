@@ -5,6 +5,8 @@ import android.app.Presentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.design.widget.TabLayout;
@@ -22,6 +24,7 @@ import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.NewsFragment;
+import com.csd.MeWaT.fragments.PlayerFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
@@ -36,7 +39,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener {
+public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
 
 
 
@@ -49,10 +52,11 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     private int[] mTabIconsSelected = {
             R.drawable.tab_home,
             R.drawable.tab_search,
-            R.drawable.tab_share,
-            R.drawable.tab_news,
+            R.drawable.tab_player,
+            R.drawable.tab_social,
             R.drawable.tab_profile};
 
+    private MediaPlayer mp;
 
     @BindArray(R.array.tab_name)
     String[] TABS;
@@ -304,7 +308,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             case FragNavController.TAB2:
                 return new SearchFragment();
             case FragNavController.TAB3:
-                return new UploadFragment();
+                return new PlayerFragment();
             case FragNavController.TAB4:
                 return new NewsFragment();
             case FragNavController.TAB5:
@@ -349,5 +353,10 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             }
             p.edit().commit();
         }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri){
+        // empty
     }
 }
