@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,10 +41,9 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- * A login screen that offers login via User/password.
+ * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity {
-
+public class SignUpActivity extends AppCompatActivity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -53,19 +53,16 @@ public class LoginActivity extends AppCompatActivity {
     // UI references.
     private EditText mUserView;
     private EditText mPasswordView;
-    private TextView notRegistered;
+    private EditText mPasswordRepView;
     private View mProgressView;
-    private View mLoginFormView;
-    private String idSesion,Username;
-    static final int USER_SIGNUP = 2;
+    private View mSignUpFormView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.activity_sign_up);
         // Set up the login form.
-        mUserView = (EditText) findViewById(R.id.User);
-
+        mUserView = (EditText) findViewById(R.id.user);
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -79,31 +76,28 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
-        Button mUserSignInButton = (Button) findViewById(R.id.User_sign_in_button);
-        mUserSignInButton.setOnClickListener(new OnClickListener() {
+        mPasswordRepView = (EditText) findViewById(R.id.passwordRep);
+        mPasswordRepView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+                if (id == EditorInfo.IME_ACTION_DONE || id == EditorInfo.IME_NULL) {
+                    attemptLogin();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        Button mUserSignUpButton = (Button) findViewById(R.id.user_sign_up_button);
+        mUserSignUpButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 attemptLogin();
             }
         });
 
-        final Activity i = this;
-        notRegistered = (TextView) findViewById(R.id.link_signup);
-        notRegistered.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent SignUpActivity = new Intent(i,SignUpActivity.class);
-                i.startActivityForResult(SignUpActivity,USER_SIGNUP);
-            }
-        });
-
-        mLoginFormView = findViewById(R.id.singup_form);
+        mSignUpFormView = findViewById(R.id.singup_form);
         mProgressView = findViewById(R.id.login_progress);
-
-        if(getIntent().hasExtra("idSesion")){
-           idSesion= getIntent().getExtras().getString("idSesion");
-           Username= getIntent().getExtras().getString("username");
-        }
     }
 
 
@@ -111,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Attempts to sign in or register the account specified by the login form.
-     * If there are form errors (invalid User, missing fields, etc.), the
+     * If there are form errors (invalid email, missing fields, etc.), the
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
@@ -124,26 +118,27 @@ public class LoginActivity extends AppCompatActivity {
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String User = mUserView.getText().toString();
+        String user = mUserView.getText().toString();
         String password = mPasswordView.getText().toString();
+        String passwordrep = mPasswordRepView.getText().toString();
 
         boolean cancel = false;
         View focusView = null;
 
-        // Check for a valid password, if the User entered one.
-        if (!TextUtils.isEmpty(password) && !isPasswordValid(password)) {
+        // Check for a valid password, if the user entered one.
+        if (!TextUtils.isEmpty(password) && !isPasswordValid(password) && !password.equals(passwordrep)) {
             mPasswordView.setError(getString(R.string.error_invalid_password));
             focusView = mPasswordView;
             cancel = true;
         }
 
-        // Check for a valid User address.
-        if (TextUtils.isEmpty(User)) {
+        // Check for a valid user address.
+        if (TextUtils.isEmpty(user)) {
             mUserView.setError(getString(R.string.error_field_required));
             focusView = mUserView;
             cancel = true;
-        } else if (!isUserValid(User)) {
-            mUserView.setError(getString(R.string.error_invalid_User));
+        } else if (!isUserValid(user)) {
+            mUserView.setError(getString(R.string.error_invalid_user));
             focusView = mUserView;
             cancel = true;
         }
@@ -154,21 +149,21 @@ public class LoginActivity extends AppCompatActivity {
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
-            // perform the User login attempt.
+            // perform the user login attempt.
             showProgress(true);
-            mAuthTask = new UserLoginTask(User, password);
+            mAuthTask = new UserLoginTask(user, password,passwordrep);
             mAuthTask.execute((Void) null);
         }
     }
 
-    private boolean isUserValid(String User) {
+    private boolean isUserValid(String user) {
         //TODO: Replace this with your own logic
-        return User.length() >= 4;
+        return user.length()>=4 && user.length()<=15 ;
     }
 
     private boolean isPasswordValid(String password) {
         //TODO: Replace this with your own logic
-        return password.length() >= 4;
+        return password.length()>=4 && password.length()<=15 ;
     }
 
     /**
@@ -182,12 +177,12 @@ public class LoginActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR2) {
             int shortAnimTime = getResources().getInteger(android.R.integer.config_shortAnimTime);
 
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
-            mLoginFormView.animate().setDuration(shortAnimTime).alpha(
+            mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignUpFormView.animate().setDuration(shortAnimTime).alpha(
                     show ? 0 : 1).setListener(new AnimatorListenerAdapter() {
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+                    mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
                 }
             });
 
@@ -203,37 +198,35 @@ public class LoginActivity extends AppCompatActivity {
             // The ViewPropertyAnimator APIs are not available, so simply show
             // and hide the relevant UI components.
             mProgressView.setVisibility(show ? View.VISIBLE : View.GONE);
-            mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
+            mSignUpFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
 
-
-
     /**
      * Represents an asynchronous login/registration task used to authenticate
-     * the User.
+     * the user.
      */
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mUser;
         private final String mPassword;
+        private final String mPasswordRep;
 
-        UserLoginTask(String User, String password) {
-            mUser = User;
+        UserLoginTask(String user, String password, String passwordrep) {
+            mUser = user;
             mPassword = password;
+            mPasswordRep = passwordrep;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpURLConnection client = null;
             InputStreamReader inputStream;
-            String title,info1;InputStream info;
 
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion");
+                url = new URL("http://mewat1718.ddns.net:8080/ps/RegistrarUsuario");
 
                 client = (HttpURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
@@ -242,7 +235,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
-                        .appendQueryParameter("contrasenya", mPassword);
+                        .appendQueryParameter("contrasenya", mPassword)
+                        .appendQueryParameter("contrasenyaRepetida",mPasswordRep);
                 String query = builder.build().getEncodedQuery();
 
                 OutputStream os = client.getOutputStream();
@@ -258,7 +252,6 @@ public class LoginActivity extends AppCompatActivity {
             } catch (SocketTimeoutException e) {
                 return false;
             }catch (IOException e) {
-                info = client.getErrorStream();
                 return false;
 
             }
@@ -278,10 +271,7 @@ public class LoginActivity extends AppCompatActivity {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
 
-                if (!result.has("error")){
-                    Username = (String) result.get("login");
-                    idSesion = (String) result.get("idSesion");
-                }else{
+                if (result.has("error")){
                     return false;
                 }
 
@@ -302,8 +292,8 @@ public class LoginActivity extends AppCompatActivity {
 
             if (success) {
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra("idSesion",idSesion);
-                returnIntent.putExtra("user",Username);
+                returnIntent.putExtra("user",mUser);
+                returnIntent.putExtra("pass",mPassword);
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             } else {
@@ -318,21 +308,5 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
         }
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == USER_SIGNUP){
-            if(resultCode == Activity.RESULT_OK){
-                Intent returnIntent = new Intent();
-                String pass = returnIntent.getStringExtra("pass");
-                String user = returnIntent.getStringExtra("user");
-                mAuthTask = new UserLoginTask(user,pass);
-                mAuthTask.execute();
-                setResult(Activity.RESULT_OK, returnIntent);
-                finish();
-            }
-        }
-    }
-
 }
 

@@ -1,19 +1,26 @@
 package com.csd.MeWaT.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Presentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.CookieSyncManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -22,6 +29,7 @@ import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.NewsFragment;
+import com.csd.MeWaT.fragments.PlayerFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
@@ -29,14 +37,21 @@ import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static android.webkit.CookieSyncManager.createInstance;
 
-public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener {
+
+public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
 
 
 
@@ -49,10 +64,11 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     private int[] mTabIconsSelected = {
             R.drawable.tab_home,
             R.drawable.tab_search,
-            R.drawable.tab_share,
-            R.drawable.tab_news,
+            R.drawable.tab_player,
+            R.drawable.tab_social,
             R.drawable.tab_profile};
 
+    private MediaPlayer mp;
 
     @BindArray(R.array.tab_name)
     String[] TABS;
@@ -66,19 +82,46 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     private FragmentHistory fragmentHistory;
 
+    private int returnpermission=150;
+
+    private static CookieManager ckmng;
+    //private static CookieSyncManager cksmng;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+        //TODO: Escribir if version android >api 15
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, returnpermission+1);
+
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-        boolean userAuthed = sp.getBoolean("userAuthed",false);
+        boolean userAuthed = sp.getBoolean("userAuthed",false),hasToLog=true;
 
+        Intent LoginActivity = new Intent(this, LoginActivity.class);
 
-        if (!userAuthed){      // Cambiar por sharedpreference usuario logueado
-            Intent LoginActivity = new Intent(this, LoginActivity.class);
-            this.startActivityForResult(LoginActivity,USER_AUTH);
+        ckmng = new CookieManager();
+       // cksmng = new CookieSyncManager();
+        if(userAuthed){
+            try {
+
+                List<HttpCookie> cookieList = ckmng.getCookieStore().get(new URI("http://mewat1718.ddns.net"));
+
+                for (HttpCookie i : cookieList){
+                    if(i.getName().equals("idSesion") && !i.hasExpired()){
+                        hasToLog=false;
+                    }
+                }
+
+            }catch( URISyntaxException e){
+
+            }
+            String user = sp.getString("username","");
+            String idSesion = sp.getString("idSesion","");
         }
+
+        if(hasToLog)this.startActivityForResult(LoginActivity,USER_AUTH);
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -147,7 +190,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
 
     private View getTabView(int position) {
-        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.tab_item_bottom, null);
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.tab_item_bottom, null,false);
         ImageView icon = (ImageView) view.findViewById(R.id.tab_icon);
         icon.setImageDrawable(Utils.setDrawableSelector(MainActivity.this, mTabIconsSelected[position], mTabIconsSelected[position]));
         return view;
@@ -170,7 +213,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
         mNavController.switchTab(position);
 
 
-//        updateToolbarTitle(position);
+        updateToolbarTitle(position);
     }
 
 
@@ -304,7 +347,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             case FragNavController.TAB2:
                 return new SearchFragment();
             case FragNavController.TAB3:
-                return new UploadFragment();
+                return new PlayerFragment();
             case FragNavController.TAB4:
                 return new NewsFragment();
             case FragNavController.TAB5:
@@ -316,12 +359,12 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     }
 
 
-//    private void updateToolbarTitle(int position){
-//
-//
-//        getSupportActionBar().setTitle(TABS[position]);
-//
-//    }
+    private void updateToolbarTitle(int position){
+
+
+        getSupportActionBar().setTitle(TABS[position]);
+
+    }
 
 
     public void updateToolbarTitle(String title) {
@@ -335,19 +378,41 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
         if (requestCode == USER_AUTH){
             SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
             if(resultCode == Activity.RESULT_OK){
-                p.edit().putBoolean("userAuthed",true);
+
+                p.edit().putBoolean("userAuthed",true).apply();
                 String s = data.getStringExtra("idSesion");
                 String us = data.getStringExtra("user");
+                try {
 
-                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT);
-                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT);
+                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("idSesion", s));
+                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("username", us));
+                    flush();
+
+
+                }catch (URISyntaxException e){
+
+                }
+
+                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT).show();
             }
             if(resultCode != Activity.RESULT_OK ){
                 Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
                 this.startActivityForResult(LoginActivity,USER_AUTH);
-                p.edit().putBoolean("userAuthed",false);
+                p.edit().putBoolean("userAuthed",false).apply();
             }
-            p.edit().commit();
         }
+    }
+    public void flush() {
+        if (ckmng != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //ckmng.flush();
+        //} else if (cksmng != null) {
+          // cksmng.sync();
+        }
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri){
+        // empty
     }
 }

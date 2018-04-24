@@ -1,4 +1,4 @@
-package com.example.carlos.mewat.helper;
+package com.csd.MeWaT.utils;
 
 import android.os.Environment;
 
@@ -47,7 +47,7 @@ public class SongsManager {
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
             }
-            if (file.getName().endsWith(".mp3") && file.length()/1024>2000) saved.add(file);
+            if (file.getName().endsWith(".mp3")) saved.add(file);
         }
         return saved.toArray(new File[saved.size()]);
     }
@@ -58,10 +58,9 @@ public class SongsManager {
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
             }
-            else if (file.getName().endsWith(".mp3") && file.length()/1024>2000) saved.add(file);
+            else if (file.getName().endsWith(".mp3")&& file.getTotalSpace()>1000) saved.add(file);
         }
         return saved;
     }
-
 
 }
