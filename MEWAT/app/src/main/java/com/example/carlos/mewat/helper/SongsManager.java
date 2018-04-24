@@ -3,7 +3,6 @@ package com.example.carlos.mewat.helper;
 import android.os.Environment;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -12,7 +11,7 @@ import java.util.HashMap;
  */
 
 public class SongsManager {
-    // SDCard Path
+
     private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
     // Constructor
@@ -48,7 +47,7 @@ public class SongsManager {
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
             }
-            if (file.getName().endsWith(".mp3")) saved.add(file);
+            if (file.getName().endsWith(".mp3") && file.length()/1024>2000) saved.add(file);
         }
         return saved.toArray(new File[saved.size()]);
     }
@@ -59,7 +58,7 @@ public class SongsManager {
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
             }
-            else if (file.getName().endsWith(".mp3")) saved.add(file);
+            else if (file.getName().endsWith(".mp3") && file.length()/1024>2000) saved.add(file);
         }
         return saved;
     }

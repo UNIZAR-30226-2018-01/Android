@@ -1,5 +1,6 @@
 package com.csd.MeWaT.activities;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Presentation;
 import android.content.Context;
@@ -10,6 +11,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.support.design.widget.TabLayout;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -70,16 +72,20 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     private FragmentHistory fragmentHistory;
 
+    private int returnpermission=150;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+
+
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, returnpermission);
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
         boolean userAuthed = sp.getBoolean("userAuthed",false);
 
 
-        if (!userAuthed){      // Cambiar por sharedpreference usuario logueado
+        if (userAuthed){      // Cambiar por sharedpreference usuario logueado
             Intent LoginActivity = new Intent(this, LoginActivity.class);
             this.startActivityForResult(LoginActivity,USER_AUTH);
         }
@@ -174,7 +180,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
         mNavController.switchTab(position);
 
 
-//        updateToolbarTitle(position);
+        updateToolbarTitle(position);
     }
 
 
@@ -320,12 +326,12 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     }
 
 
-//    private void updateToolbarTitle(int position){
-//
-//
-//        getSupportActionBar().setTitle(TABS[position]);
-//
-//    }
+    private void updateToolbarTitle(int position){
+
+
+        getSupportActionBar().setTitle(TABS[position]);
+
+    }
 
 
     public void updateToolbarTitle(String title) {

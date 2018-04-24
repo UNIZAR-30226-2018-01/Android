@@ -4,7 +4,7 @@
     <array name="tab_name">
         <item>Home</item>
         <item>Search</item>
-        <item>Share</item>
+        <item>Player</item>
         <item>News</item>
         <item>Profile</item>
     </array>
@@ -12,16 +12,16 @@
 
     <!-- Strings related to login -->
     <string name="prompt_User">User</string>
-    <string name="prompt_password">Password</string>
+    <string name="prompt_password"> Password </string>
+    <string name="prompt_passwordRep">Repeat Password</string>
     <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_up">Sign up</string>
     <string name="action_sign_in_short">Sign in</string>
-    <string name="error_invalid_User">This User address is invalid</string>
+    <string name="action_sign_up_short">Sign up</string>
+    <string name="error_invalid_User">This user is invalid</string>
     <string name="error_invalid_password">This password is too short</string>
     <string name="error_incorrect_password">This password is incorrect</string>
     <string name="error_field_required">This field is required</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing User
-        completions."
-    </string>
     <string name="no_song">No hay canciones</string>
     <string name="title_activity_player">PlayerActivity</string>
     <string name="songTitle">Unknown Song</string>
@@ -30,7 +30,12 @@
     <string name="playButton">Play Button</string>
     <string name="skip_next">Skip Next</string>
     <string name="skip_previous">Skip Previous</string>
+    <string name="title_activity_sign_up">SignUp</string>
+    <string name="title_activity_playlist">Playlist</string>
 
+    <!-- Strings related to login -->
+    <string name="prompt_user">User</string>
+    <string name="error_invalid_user">This user is invalid</string>
 
 
 </resources>

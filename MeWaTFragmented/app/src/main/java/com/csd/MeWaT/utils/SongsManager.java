@@ -11,7 +11,7 @@ import java.util.HashMap;
  */
 
 public class SongsManager {
-    // SDCard Path
+
     private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
     // Constructor
@@ -26,7 +26,7 @@ public class SongsManager {
     public ArrayList<HashMap<String, String>> getPlayList(){
         File home = Environment.getExternalStorageDirectory();
 
-        File[] listedFiles = reclistFile(home);
+        File [] listedFiles = reclistFile(home);
         if ((listedFiles != null) && listedFiles.length > 0) {
             for (File file : listedFiles) {
                 HashMap<String, String> song = new HashMap<String, String>();
@@ -41,8 +41,8 @@ public class SongsManager {
         return songsList;
     }
 
-    File[] reclistFile(File path ){
-        ArrayList<File> saved = new ArrayList<>();
+    File [] reclistFile( File path ){
+        ArrayList <File> saved = new ArrayList<>();
         for (File file : path.listFiles()){
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
@@ -52,16 +52,15 @@ public class SongsManager {
         return saved.toArray(new File[saved.size()]);
     }
 
-    ArrayList<File> reclistFile2(File path ){
-        ArrayList<File> saved = new ArrayList<>();
+    ArrayList <File> reclistFile2( File path ){
+        ArrayList <File> saved = new ArrayList<>();
         for (File file : path.listFiles()){
             if (file.isDirectory()){
                 saved.addAll(reclistFile2(file));
             }
-            else if (file.getName().endsWith(".mp3")) saved.add(file);
+            else if (file.getName().endsWith(".mp3")&& file.getTotalSpace()>1000) saved.add(file);
         }
         return saved;
     }
-
 
 }

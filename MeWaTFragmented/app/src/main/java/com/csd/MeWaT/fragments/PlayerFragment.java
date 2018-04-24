@@ -6,6 +6,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,6 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -38,19 +42,31 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
     private OnFragmentInteractionListener mListener;
 
-    private ImageButton btnPlay;
-    private ImageButton btnNext;
-    private ImageButton btnPrevious;
-    private ImageButton btnPlaylist;
-    private ImageButton btnRepeat;
-    private ImageButton btnShuffle;
+    @BindView(R.id.btnPlay)
+    ImageButton btnPlay;
+    @BindView(R.id.btnNext)
+    ImageButton btnNext;
+    @BindView(R.id.btnPrevious)
+    ImageButton btnPrevious;
+    @BindView(R.id.btnPlaylist)
+    ImageButton btnPlaylist;
+    @BindView(R.id.btnRepeat)
+    ImageButton btnRepeat;
+    @BindView(R.id.btnShuffle)
+    ImageButton btnShuffle;
 
-    private SeekBar songProgressBar;
-    private TextView songCurrentDurationLabel;
-    private TextView songTotalDurationLabel;
+    @BindView(R.id.songProgressBar)
+    SeekBar songProgressBar;
+    @BindView(R.id.songCurrentDurationLabel)
+    TextView songCurrentDurationLabel;
+    @BindView(R.id.songTotalDurationLabel)
+    TextView songTotalDurationLabel;
 
-    private TextView songTitleLabel;
-    private TextView songAlbumLabel;
+
+    @BindView(R.id.songTitle)
+    TextView songTitleLabel;
+    @BindView(R.id.albumTitle)
+    TextView songAlbumLabel;
 
     // Media Player
     private MediaPlayer mp;
@@ -83,28 +99,23 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Mediaplayer
+        mp = new MediaPlayer();
+        songManager = new SongsManager();
+        // Getting all songs list
+        songsList = songManager.getPlayList();
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        View view = inflater.inflate(R.layout.fragment_player, container, false);
-        btnPlay = (ImageButton) view.findViewById(R.id.btnPlay);
-        btnNext = (ImageButton)view.findViewById(R.id.btnNext);
-        btnPrevious =(ImageButton)view.findViewById(R.id.btnPrevious);
-        btnRepeat =(ImageButton) view.findViewById(R.id.btnRepeat);
-        btnShuffle = (ImageButton)view.findViewById(R.id.btnShuffle);
-        btnPlaylist =(ImageButton) view.findViewById(R.id.btnPlaylist);
+        final View view = inflater.inflate(R.layout.fragment_player, container, false);
+        ButterKnife.bind(this, view);
 
-        songProgressBar = (SeekBar) view.findViewById(R.id.songProgressBar);
-        songTitleLabel = (TextView) view.findViewById(R.id.songTitle);
-        songCurrentDurationLabel = (TextView) view.findViewById(R.id.songCurrentDurationLabel);
-        songTotalDurationLabel = (TextView) view.findViewById(R.id.songTotalDurationLabel);
 
-        // Mediaplayer
-        mp = new MediaPlayer();
-        songManager = new SongsManager();
         btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
         btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
         btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
@@ -119,26 +130,34 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
         mp.setOnCompletionListener(this); // Important
 
 
-        btnPlay.setOnClickListener(new View.OnClickListener() {
 
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(final View view, @Nullable Bundle bundle){
+
+        btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View arg0) {
                 // check for already playing
-                if(mp.isPlaying()){
-                    if(mp!=null){
-                        mp.pause();
-                        // Changing button image to play button
-                        btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-                    }
-                }else{
-                    // Resume song
-                    if(mp!=null){
-                        mp.start();
-                        // Changing button image to pause button
-                        btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+                if(songsList.size()>0) {
+                    if (mp.isPlaying()) {
+                        if (mp != null) {
+                            mp.pause();
+                            // Changing button image to play button
+                            btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+                        }
+                    } else {
+                        // Resume song
+                        if (mp != null) {
+                            mp.start();
+                            // Changing button image to pause button
+                            btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+                        }
                     }
                 }
-
             }
         });
 
@@ -153,15 +172,16 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
             @Override
             public void onClick(View arg0) {
                 // check if next song is there or not
-                if(currentSongIndex < (songsList.size() - 1)){
-                    playSong(currentSongIndex + 1);
-                    currentSongIndex = currentSongIndex + 1;
-                }else{
-                    // play first song
-                    playSong(0);
-                    currentSongIndex = 0;
+                if(songsList.size()>0) {
+                    if (currentSongIndex < (songsList.size() - 1)) {
+                        playSong(currentSongIndex + 1);
+                        currentSongIndex = currentSongIndex + 1;
+                    } else {
+                        // play first song
+                        playSong(0);
+                        currentSongIndex = 0;
+                    }
                 }
-
             }
         });
 
@@ -173,15 +193,16 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
             @Override
             public void onClick(View arg0) {
-                if(currentSongIndex > 0){
-                    playSong(currentSongIndex - 1);
-                    currentSongIndex = currentSongIndex - 1;
-                }else{
-                    // play last song
-                    playSong(songsList.size() - 1);
-                    currentSongIndex = songsList.size() - 1;
+                if(songsList.size()>0) {
+                    if (currentSongIndex > 0) {
+                        playSong(currentSongIndex - 1);
+                        currentSongIndex = currentSongIndex - 1;
+                    } else {
+                        // play last song
+                        playSong(songsList.size() - 1);
+                        currentSongIndex = songsList.size() - 1;
+                    }
                 }
-
             }
         });
 
@@ -222,12 +243,12 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                 if(isShuffle){
                     isShuffle = false;
                     Toast.makeText(getActivity().getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
-                    btnShuffle.setSelected(false);
+                    btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
                 }else{
                     // make repeat to true
                     isShuffle= true;
                     Toast.makeText(getActivity().getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
-                    btnShuffle.setSelected(true);
+                    btnShuffle.setImageResource(R.drawable.ic_shuffle_white_24dp);
                 }
             }
         });
@@ -240,14 +261,28 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
             @Override
             public void onClick(View arg0) {
-                Intent i = new Intent(getActivity().getApplicationContext(), PlayListActivity.class);
+                Intent i = new Intent(view.getContext(), PlayListActivity.class);
                 startActivityForResult(i, 100);
             }
         });
-        return inflater.inflate(R.layout.fragment_player, container, false);
+
     }
 
+    /**
+     * Receiving song index from playlist view
+     * and play the song
+     * */
+    @Override
+    public void onActivityResult(int requestCode,
+                                    int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == 100){
+            currentSongIndex = data.getExtras().getInt("songIndex");
+            // play selected song
+            playSong(currentSongIndex);
+        }
 
+    }
 
     /**
      * Function to play a song

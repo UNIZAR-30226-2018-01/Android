@@ -33,27 +33,27 @@
         android:layout_marginTop="8dp"
         android:text="" />
 
-    <ImageButton
-        android:id="@+id/btnPlaylist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/songTitle"
-        android:layout_toEndOf="@+id/album_thumbnail"
-        android:layout_toRightOf="@+id/album_thumbnail"
-        app:srcCompat="@drawable/ic_queue_music_black_24dp"/>
+        <ImageButton
+            android:id="@+id/btnPlaylist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignEnd="@+id/timerDisplay"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="19dp"
+            app:srcCompat="@drawable/ic_queue_music_black_24dp" />
 
 
-    <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/album_thumbnail"
-        android:layout_width="225dp"
-        android:layout_height="225dp"
-        android:layout_above="@+id/timerDisplay"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="41dp"
-        android:contentDescription="@string/album_thumbnail"
-        android:src="@drawable/logo"
-        app:civ_border_color="@color/black"
-        app:civ_border_width="2dp" />
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/album_thumbnail"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/timerDisplay"
+            android:contentDescription="@string/album_thumbnail"
+            android:src="@drawable/logo"
+            app:civ_border_color="@color/black"
+            app:civ_border_width="2dp" />
 
 
     <!-- Progress Bar/Seek bar / Times -->
