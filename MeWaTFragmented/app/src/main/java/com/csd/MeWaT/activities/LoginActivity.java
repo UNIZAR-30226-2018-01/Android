@@ -99,6 +99,11 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.singup_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        if(getIntent().hasExtra("idSesion")){
+           idSesion= getIntent().getExtras().getString("idSesion");
+           Username= getIntent().getExtras().getString("username");
+        }
     }
 
 
@@ -318,7 +323,13 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == USER_SIGNUP){
             if(resultCode == Activity.RESULT_OK){
-                //TODO: Mirar a ver si se cierra tras registro
+                Intent returnIntent = new Intent();
+                String pass = returnIntent.getStringExtra("pass");
+                String user = returnIntent.getStringExtra("user");
+                mAuthTask = new UserLoginTask(user,pass);
+                mAuthTask.execute();
+                setResult(Activity.RESULT_OK, returnIntent);
+                finish();
             }
         }
     }

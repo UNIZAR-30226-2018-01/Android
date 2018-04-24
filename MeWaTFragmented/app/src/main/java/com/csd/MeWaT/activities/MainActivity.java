@@ -8,8 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -18,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.CookieSyncManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -34,11 +37,18 @@ import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
+import java.net.CookieManager;
+import java.net.HttpCookie;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.List;
 import java.util.prefs.Preferences;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.webkit.CookieSyncManager.createInstance;
 
 
 public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
@@ -74,21 +84,44 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     private int returnpermission=150;
 
+    private static CookieManager ckmng;
+    //private static CookieSyncManager cksmng;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
 
+        //TODO: Escribir if version android >api 15
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, returnpermission+1);
 
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, returnpermission);
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-        boolean userAuthed = sp.getBoolean("userAuthed",false);
+        boolean userAuthed = sp.getBoolean("userAuthed",false),hasToLog=true;
 
+        Intent LoginActivity = new Intent(this, LoginActivity.class);
 
-        if (userAuthed){      // Cambiar por sharedpreference usuario logueado
-            Intent LoginActivity = new Intent(this, LoginActivity.class);
-            this.startActivityForResult(LoginActivity,USER_AUTH);
+        ckmng = new CookieManager();
+       // cksmng = new CookieSyncManager();
+        if(userAuthed){
+            try {
+
+                List<HttpCookie> cookieList = ckmng.getCookieStore().get(new URI("http://mewat1718.ddns.net"));
+
+                for (HttpCookie i : cookieList){
+                    if(i.getName().equals("idSesion") && !i.hasExpired()){
+                        hasToLog=false;
+                    }
+                }
+
+            }catch( URISyntaxException e){
+
+            }
+            String user = sp.getString("username","");
+            String idSesion = sp.getString("idSesion","");
         }
+
+        if(hasToLog)this.startActivityForResult(LoginActivity,USER_AUTH);
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -157,7 +190,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
 
     private View getTabView(int position) {
-        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.tab_item_bottom, null);
+        View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.tab_item_bottom, null,false);
         ImageView icon = (ImageView) view.findViewById(R.id.tab_icon);
         icon.setImageDrawable(Utils.setDrawableSelector(MainActivity.this, mTabIconsSelected[position], mTabIconsSelected[position]));
         return view;
@@ -345,19 +378,36 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
         if (requestCode == USER_AUTH){
             SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
             if(resultCode == Activity.RESULT_OK){
-                p.edit().putBoolean("userAuthed",true);
+
+                p.edit().putBoolean("userAuthed",true).apply();
                 String s = data.getStringExtra("idSesion");
                 String us = data.getStringExtra("user");
+                try {
 
-                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT);
-                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT);
+                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("idSesion", s));
+                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("username", us));
+                    flush();
+
+
+                }catch (URISyntaxException e){
+
+                }
+
+                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT).show();
             }
             if(resultCode != Activity.RESULT_OK ){
                 Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
                 this.startActivityForResult(LoginActivity,USER_AUTH);
-                p.edit().putBoolean("userAuthed",false);
+                p.edit().putBoolean("userAuthed",false).apply();
             }
-            p.edit().commit();
+        }
+    }
+    public void flush() {
+        if (ckmng != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            //ckmng.flush();
+        //} else if (cksmng != null) {
+          // cksmng.sync();
         }
     }
 
