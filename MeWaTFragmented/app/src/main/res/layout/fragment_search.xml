@@ -8,23 +8,22 @@
 
     <RelativeLayout
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="65dp">
 
-        <TextView
+        <EditText
             android:id="@+id/textBusqueda"
-            android:layout_width="wrap_content"
+            android:layout_width="310dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
-            android:text="Buscar..."
-            android:textSize="120px"
-            android:textStyle="bold" />
+            android:layout_toLeftOf="@+id/buscar"
+            android:layout_toStartOf="@+id/buscar"
+            android:text="Buscar cancion..."
+            android:textSize="70px" />
 
         <ImageButton
-            android:id="@+id/imageButton2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/buscar"
+            android:layout_width="67dp"
+            android:layout_height="65dp"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
             android:layout_alignParentTop="true"
