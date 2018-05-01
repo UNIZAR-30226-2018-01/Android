@@ -4,16 +4,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center">
+    android:gravity="top">
 
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="65dp">
 
+        <EditText
+            android:id="@+id/textBusqueda"
+            android:layout_width="310dp"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_toLeftOf="@+id/buscar"
+            android:layout_toStartOf="@+id/buscar"
+            android:text="Buscar cancion..."
+            android:textSize="70px" />
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Search Fragment"
-        android:textSize="25sp"
-        android:layout_gravity="center"
-        android:gravity="center"/>
+        <ImageButton
+            android:id="@+id/buscar"
+            android:layout_width="67dp"
+            android:layout_height="65dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            app:srcCompat="@drawable/tab_search" />
+
+    </RelativeLayout>
 
 </LinearLayout>
