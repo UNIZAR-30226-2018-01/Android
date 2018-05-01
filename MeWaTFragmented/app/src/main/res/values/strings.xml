@@ -36,6 +36,7 @@
     <!-- Strings related to login -->
     <string name="prompt_user">User</string>
     <string name="error_invalid_user">This user is invalid</string>
+    <string name="user_photo">User\'s photo profile</string>
 
 
 </resources>

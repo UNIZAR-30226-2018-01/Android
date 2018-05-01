@@ -2,7 +2,6 @@ package com.csd.MeWaT.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,13 +9,12 @@ import android.widget.Button;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.utils.Utils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class NewsFragment extends BaseFragment{
+public class SocialFragment extends BaseFragment{
 
 
 
@@ -26,10 +24,10 @@ public class NewsFragment extends BaseFragment{
     int fragCount;
 
 
-    public static NewsFragment newInstance(int instance) {
+    public static SocialFragment newInstance(int instance) {
         Bundle args = new Bundle();
         args.putInt(ARGS_INSTANCE, instance);
-        NewsFragment fragment = new NewsFragment();
+        SocialFragment fragment = new SocialFragment();
         fragment.setArguments(args);
         return fragment;
     }
@@ -46,7 +44,7 @@ public class NewsFragment extends BaseFragment{
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
 
-        View view = inflater.inflate(R.layout.fragment_news, container, false);
+        View view = inflater.inflate(R.layout.fragment_social, container, false);
 
         ButterKnife.bind(this, view);
 
@@ -70,7 +68,7 @@ public class NewsFragment extends BaseFragment{
             @Override
             public void onClick(View v) {
                 if (mFragmentNavigation != null) {
-                    mFragmentNavigation.pushFragment(NewsFragment.newInstance(fragCount + 1));
+                    mFragmentNavigation.pushFragment(SocialFragment.newInstance(fragCount + 1));
 
 
                 }

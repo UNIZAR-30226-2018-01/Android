@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.activities.PlayListActivity;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
@@ -101,10 +102,10 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
         super.onCreate(savedInstanceState);
 
         // Mediaplayer
-        mp = new MediaPlayer();
+        mp = MainActivity.mp;
         songManager = new SongsManager();
         // Getting all songs list
-        songsList = songManager.getPlayList();
+        songsList = MainActivity.songsList;
 
     }
 

@@ -2,7 +2,6 @@ package com.csd.MeWaT.activities;
 
 import android.Manifest;
 import android.app.Activity;
-import android.app.Presentation;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,17 +9,13 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.CookieSyncManager;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -28,11 +23,10 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
-import com.csd.MeWaT.fragments.NewsFragment;
+import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.PlayerFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
-import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
@@ -41,14 +35,13 @@ import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.prefs.Preferences;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static android.webkit.CookieSyncManager.createInstance;
 
 
 public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
@@ -68,7 +61,8 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             R.drawable.tab_social,
             R.drawable.tab_profile};
 
-    private MediaPlayer mp;
+    public static MediaPlayer mp;
+    public static ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
     @BindArray(R.array.tab_name)
     String[] TABS;
@@ -349,7 +343,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             case FragNavController.TAB3:
                 return new PlayerFragment();
             case FragNavController.TAB4:
-                return new NewsFragment();
+                return new SocialFragment();
             case FragNavController.TAB5:
                 return new ProfileFragment();
 
