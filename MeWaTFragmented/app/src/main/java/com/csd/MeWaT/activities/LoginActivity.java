@@ -328,6 +328,8 @@ public class LoginActivity extends AppCompatActivity {
                 String user = returnIntent.getStringExtra("user");
                 mAuthTask = new UserLoginTask(user,pass);
                 mAuthTask.execute();
+                returnIntent.putExtra("idSesion",idSesion);
+                returnIntent.putExtra("user",Username);
                 setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }

@@ -6,29 +6,46 @@
     android:orientation="vertical"
     android:gravity="top">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="fill_parent"
-        android:layout_height="65dp">
+        android:orientation="horizontal"
+        android:layoutDirection="rtl"
+        android:layout_height="50dp">
+        <ImageButton
+            android:id="@+id/search_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_margin="10dp"
+            android:layout_gravity="center"
+            android:background="#00000000"
+            app:srcCompat="@drawable/ic_search_black_24dp" />
 
         <EditText
-            android:id="@+id/textBusqueda"
-            android:layout_width="310dp"
+            android:id="@+id/search_text"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_toLeftOf="@+id/buscar"
-            android:layout_toStartOf="@+id/buscar"
-            android:text="Buscar cancion..."
-            android:textSize="70px" />
+            android:maxLines="1"
+            android:imeOptions="actionSend"
+            android:inputType="textCapWords|textAutoCorrect"
+            android:hint="@string/buscar_cancion"
+            android:gravity="left"
+            android:textSize="18sp" />
 
-        <ImageButton
-            android:id="@+id/buscar"
-            android:layout_width="67dp"
-            android:layout_height="65dp"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentTop="true"
-            app:srcCompat="@drawable/tab_search" />
+    </LinearLayout>
+    <ProgressBar
+        android:id="@+id/login_progress"
+        style="?android:attr/progressBarStyleLarge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginBottom="8dp"
+        android:visibility="gone" />
 
-    </RelativeLayout>
+    <ListView
+        android:id="@+id/search_listview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    </ListView>
 
 </LinearLayout>

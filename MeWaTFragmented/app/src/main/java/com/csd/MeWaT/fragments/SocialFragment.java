@@ -18,8 +18,8 @@ public class SocialFragment extends BaseFragment{
 
 
 
-    @BindView(R.id.btn_click_me)
-    Button btnClickMe;
+    @BindView(R.id.social_listView)
+    Button social_listview;
 
     int fragCount;
 
@@ -62,18 +62,6 @@ public class SocialFragment extends BaseFragment{
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-
-        btnClickMe.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mFragmentNavigation != null) {
-                    mFragmentNavigation.pushFragment(SocialFragment.newInstance(fragCount + 1));
-
-
-                }
-            }
-        });
 
 
         ( (MainActivity)getActivity()).updateToolbarTitle((fragCount == 0) ? "News" : "Sub News "+fragCount);

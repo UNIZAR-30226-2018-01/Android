@@ -63,6 +63,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     public static MediaPlayer mp;
     public static ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
+    public static String user, idSesion;
 
     @BindArray(R.array.tab_name)
     String[] TABS;
@@ -78,8 +79,6 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     private int returnpermission=150;
 
-    private static CookieManager ckmng;
-    //private static CookieSyncManager cksmng;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -92,27 +91,14 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
         boolean userAuthed = sp.getBoolean("userAuthed",false),hasToLog=true;
+        mp=new MediaPlayer();
 
         Intent LoginActivity = new Intent(this, LoginActivity.class);
 
-        ckmng = new CookieManager();
-       // cksmng = new CookieSyncManager();
         if(userAuthed){
-            try {
-
-                List<HttpCookie> cookieList = ckmng.getCookieStore().get(new URI("http://mewat1718.ddns.net"));
-
-                for (HttpCookie i : cookieList){
-                    if(i.getName().equals("idSesion") && !i.hasExpired()){
-                        hasToLog=false;
-                    }
-                }
-
-            }catch( URISyntaxException e){
-
-            }
-            String user = sp.getString("username","");
-            String idSesion = sp.getString("idSesion","");
+            user = sp.getString("username","");
+            idSesion = sp.getString("idSesion","");
+            hasToLog=false;
         }
 
         if(hasToLog)this.startActivityForResult(LoginActivity,USER_AUTH);
@@ -205,8 +191,6 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
 
     private void switchTab(int position) {
         mNavController.switchTab(position);
-
-
         updateToolbarTitle(position);
     }
 
@@ -374,21 +358,10 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             if(resultCode == Activity.RESULT_OK){
 
                 p.edit().putBoolean("userAuthed",true).apply();
-                String s = data.getStringExtra("idSesion");
-                String us = data.getStringExtra("user");
-                try {
+                p.edit().putString("idSesion",data.getStringExtra("idSesion")).apply();
+                p.edit().putString("username",data.getStringExtra("user")).apply();
 
-                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("idSesion", s));
-                    ckmng.getCookieStore().add(new URI("http://mewat1718.ddns.net"), new HttpCookie("username", us));
-                    flush();
-
-
-                }catch (URISyntaxException e){
-
-                }
-
-                Toast.makeText(this,"idSesion:"+s,Toast.LENGTH_SHORT).show();
-                Toast.makeText(this,"user:"+us,Toast.LENGTH_SHORT).show();
+                Toast.makeText(this,"WELCOME: "+data.getStringExtra("user"),Toast.LENGTH_SHORT).show();
             }
             if(resultCode != Activity.RESULT_OK ){
                 Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
@@ -397,13 +370,7 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
             }
         }
     }
-    public void flush() {
-        if (ckmng != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            //ckmng.flush();
-        //} else if (cksmng != null) {
-          // cksmng.sync();
-        }
-    }
+
 
     @Override
     public void onFragmentInteraction(Uri uri){

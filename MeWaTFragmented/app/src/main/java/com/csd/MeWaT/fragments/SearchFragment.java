@@ -5,44 +5,62 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-
-import javax.net.ssl.HttpsURLConnection;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class SearchFragment extends BaseFragment implements MediaPlayer.OnCompletionListener{
+public class SearchFragment extends BaseFragment {
 
-    @BindView(R.id.textBusqueda)
-    EditText busqueda;
-    @BindView(R.id.buscar)
-    ImageButton botonBuscar;
+    @BindView(R.id.search_text)
+    EditText search_text;
+    @BindView(R.id.search_button)
+    ImageButton search_button;
+    @BindView(R.id.search_listview)
+    ListView search_listView;
 
     private MediaPlayer mp;
     private SongsManager mang;
     private Utils utils;
-    private String query;
+    private ArrayList<Song> resultList;
+    private ArrayList<HashMap<String,String>> listAdapter =new ArrayList<HashMap<String,String>>();
+    SimpleAdapter adapter;
 
     public SearchFragment(){
         //Empty public constructor
@@ -60,10 +78,13 @@ public class SearchFragment extends BaseFragment implements MediaPlayer.OnComple
         final View view = inflater.inflate(R.layout.fragment_search, container, false);
         ButterKnife.bind(this, view);
 
-        botonBuscar.setImageResource(R.drawable.tab_search);
-        busqueda.setSelection(R.id.textBusqueda);
+        search_button.setImageResource(R.drawable.ic_search_black_24dp);
         utils = new Utils();
-        query = new String();
+        adapter = new SimpleAdapter(view.getContext(),listAdapter,R.layout.search_row,
+                new String[]{"title","album","artist"},
+                new int[]{R.id.songTitle,R.id.albumTitle,R.id.artistTitle});
+        search_listView.setAdapter(adapter);
+
         return view;
     }
 
@@ -71,53 +92,163 @@ public class SearchFragment extends BaseFragment implements MediaPlayer.OnComple
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        botonBuscar.setOnClickListener(new View.OnClickListener() {
+        search_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // get the query from the textView
-                query = busqueda.getText().toString();
+                String query = search_text.getText().toString();
                 // if the query isnt empry, then search fro anything in the DB
-                if (!query.isEmpty()){
-
+                if (!query.trim().isEmpty()){
+                    SearchTask searchTask = new SearchTask(query.trim());
+                    searchTask.execute();
                 }
+            }
+        });
+
+        search_text.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                boolean handled = false;
+                if (i == EditorInfo.IME_ACTION_SEND) {
+                    String query = search_text.getText().toString();
+                    // if the query isnt empry, then search fro anything in the DB
+                    if (!query.trim().isEmpty()){
+                        SearchTask searchTask = new SearchTask(query.trim());
+                        searchTask.execute();
+                    }
+                    handled = true;
+                }
+                return handled;
+
+            }
+        });
+
+
+        search_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
             }
         });
     }
 
-    @Override
-    public void onCompletion(MediaPlayer mediaPlayer) {
+    /**
+     * Represents an asynchronous login/registration task used to authenticate
+     * the User.
+     */
+    public class SearchTask extends AsyncTask<Void, Void, Boolean> {
 
-    }
+        private final String query;
 
-    public class SearchTask extends AsyncTask<Void, Void, Void> {
+        SearchTask(String txt) {
+            query = txt;
+        }
+
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
             URL url;
             HttpURLConnection client = null;
-            InputStreamReader input;
-            String title, info;
-            InputStream inpStream;
+            InputStreamReader inputStream;
 
-            try{
-                url = new URL("http://mewat1718.ddns.net:8080/ps/Busqueda");
+
+            try {
+                url = new URL("http://mewat1718.ddns.net:8080/ps/BuscarCancionTitulo");
 
                 client = (HttpURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
                 client.setRequestProperty("User-agent", System.getProperty("http.agent"));
                 client.setDoOutput(true);
-
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("textBusqueda",query );
+                        .appendQueryParameter("titulo", query);
+                String query = builder.build().getEncodedQuery();
 
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+                client.disconnect();
 
-            }catch (MalformedURLException e){
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
 
-            }catch (SocketTimeoutException e){
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                if (!result.has("error")){
+                    resultList = new ArrayList<>();
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        resultList.add(new Song(jsObj.getString("tituloCancion"),
+                                jsObj.getString("nombreArtista"),
+                                jsObj.getString("nombreAlbum"),
+                                jsObj.getString("genero")
+                                //,jsObj.getString("url")
+                                )
+                        );
+                    }
+
+                }else{
+                    return false;
+                }
+
 
             }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            HashMap<String,String> temp = new HashMap<String,String>();
+
+            if (success) {
+                listAdapter.clear();
+                for(Song s: resultList){
+                    temp.put("title",s.getTitle());
+                    temp.put("album",s.getAlbum());
+                    temp.put("artist",s.getArtista());
+                    listAdapter.add(temp);
+                }
+                adapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Something went Wrong",
+                        Toast.LENGTH_SHORT).show();
 
             }
-            return null;
+        }
+
+        @Override
+        protected void onCancelled() {
+
         }
     }
+
+
 }
