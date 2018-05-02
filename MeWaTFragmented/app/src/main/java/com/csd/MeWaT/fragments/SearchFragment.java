@@ -152,6 +152,7 @@ public class SearchFragment extends BaseFragment {
             InputStreamReader inputStream;
 
 
+            resultList = new ArrayList<>();
             try {
                 url = new URL("http://mewat1718.ddns.net:8080/ps/BuscarCancionTitulo");
 
@@ -197,7 +198,7 @@ public class SearchFragment extends BaseFragment {
                 JSONObject result = new JSONObject(tokener);
 
                 if (!result.has("error")){
-                    resultList = new ArrayList<>();
+
                     JSONArray resultArray = result.getJSONArray("canciones");
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
@@ -238,7 +239,7 @@ public class SearchFragment extends BaseFragment {
                 }
                 adapter.notifyDataSetChanged();
             } else {
-                Toast.makeText(getActivity().getApplicationContext(), "Something went Wrong",
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
 
             }

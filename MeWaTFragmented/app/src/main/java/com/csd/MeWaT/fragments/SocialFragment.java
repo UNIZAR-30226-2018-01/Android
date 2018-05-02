@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ListView;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
@@ -19,7 +20,7 @@ public class SocialFragment extends BaseFragment{
 
 
     @BindView(R.id.social_listView)
-    Button social_listview;
+    ListView social_listview;
 
     int fragCount;
 
