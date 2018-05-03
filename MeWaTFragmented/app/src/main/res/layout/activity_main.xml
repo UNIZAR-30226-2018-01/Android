@@ -39,14 +39,35 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@drawable/bottom_shadow" />
+<!--
+    <LinearLayout
+        android:id="@+id/tab_player_layout"
+        style="@style/BottomTabLayout"
+        android:layout_width="match_parent"
+        android:visibility="visible"
+        android:layout_height="80dp"
+        android:background="@color/white">
 
+        <ImageView
+            android:background="@drawable/image_border"
+            android:layout_margin="5dp"
+            android:layout_width="70dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/logo"/>
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@drawable/bottom_shadow" />        -->
 
     <android.support.design.widget.TabLayout
         android:id="@+id/bottom_tab_layout"
         style="@style/BottomTabLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="1.25"
         android:background="@color/white" />
 
 </LinearLayout>

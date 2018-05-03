@@ -129,6 +129,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
         // Listeners
         songProgressBar.setOnSeekBarChangeListener(this); // Important
         songProgressBar.setEnabled(false);
+        songProgressBar.setBackgroundColor(6730751);
         mp.setOnCompletionListener(this); // Important
 
 
@@ -225,12 +226,12 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                     // make repeat to true
                     isRepeat = 1;
                     Toast.makeText(getActivity().getApplicationContext(), "Repeat all is ON", Toast.LENGTH_SHORT).show();
-                    btnRepeat.setImageResource(R.drawable.ic_repeat_all_white_24dp);
+                    btnRepeat.setImageResource(R.drawable.ic_repeat_all_blue_24dp);
                 }else if (isRepeat == 1){
                     // make repeat to true
                     isRepeat = 2;
                     Toast.makeText(getActivity().getApplicationContext(), "Repeat one is ON", Toast.LENGTH_SHORT).show();
-                    btnRepeat.setImageResource(R.drawable.ic_repeat_one_white_24dp);
+                    btnRepeat.setImageResource(R.drawable.ic_repeat_one_blue_24dp);
                 }
             }
         });
@@ -251,7 +252,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                     // make repeat to true
                     isShuffle= true;
                     Toast.makeText(getActivity().getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
-                    btnShuffle.setImageResource(R.drawable.ic_shuffle_white_24dp);
+                    btnShuffle.setImageResource(R.drawable.ic_shuffle_blue_24dp);
                 }
             }
         });

@@ -8,9 +8,10 @@
         <item>News</item>
         <item>Profile</item>
     </array>
-    <string name="title_activity_login">Sign in</string>
+
 
     <!-- Strings related to login -->
+    <string name="title_activity_login">Sign in</string>
     <string name="prompt_User">User</string>
     <string name="prompt_password"> Password </string>
     <string name="prompt_passwordRep">Repeat Password</string>
@@ -38,6 +39,7 @@
     <string name="error_invalid_user">This user is invalid</string>
     <string name="user_photo">User\'s photo profile</string>
     <string name="buscar_cancion">Buscar cancion...</string>
+    <string name="title_activity_main">MainActivity</string>
 
 
 </resources>

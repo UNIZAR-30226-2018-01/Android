@@ -1,16 +1,13 @@
 package com.csd.MeWaT.activities;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,10 +16,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
-import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.PlayerFragment;
@@ -32,14 +30,8 @@ import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
-import java.net.CookieManager;
-import java.net.HttpCookie;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -78,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     private FragmentHistory fragmentHistory;
 
+    //public LinearLayout tabPlayerLayout;
     private int returnpermission=150;
 
 
@@ -87,6 +80,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         super.onCreate(savedInstanceState);
         mp=new MediaPlayer();
 
+        //tabPlayerLayout = (LinearLayout) this.findViewById(R.id.tab_player_layout);
 
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
@@ -331,7 +325,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     }
 
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == USER_AUTH){
@@ -357,4 +350,5 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     public void onFragmentInteraction(Uri uri){
         // empty
     }
+
 }
