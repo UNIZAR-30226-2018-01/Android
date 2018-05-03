@@ -48,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
                 <EditText
-                    android:id="@+id/user"
+                    android:id="@+id/userChange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/prompt_User"
@@ -75,7 +75,7 @@
             android:layout_below="@id/nameLinear"
             >
             <EditText
-                android:id="@+id/password"
+                android:id="@+id/pswdChange"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_password"
@@ -86,7 +86,7 @@
                 android:maxLines="1"
                 android:singleLine="true" />
             <EditText
-                android:id="@+id/passwordRep"
+                android:id="@+id/pswdChangeRep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/prompt_passwordRep"
