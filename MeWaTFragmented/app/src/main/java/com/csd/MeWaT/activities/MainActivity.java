@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -44,7 +45,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends BaseActivity implements BaseFragment.FragmentNavigation, FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
+public class MainActivity extends AppCompatActivity implements FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener  {
 
 
 
@@ -84,24 +85,11 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-
-        //TODO: Escribir if version android >api 15
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, returnpermission+1);
-
-        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
-        boolean userAuthed = sp.getBoolean("userAuthed",false),hasToLog=true;
         mp=new MediaPlayer();
 
-        Intent LoginActivity = new Intent(this, LoginActivity.class);
 
-        if(userAuthed){
-            user = sp.getString("username","");
-            idSesion = sp.getString("idSesion","");
-            hasToLog=false;
-        }
-
-        if(hasToLog)this.startActivityForResult(LoginActivity,USER_AUTH);
+        idSesion=getIntent().getExtras().getString("idSesion");
+        user = getIntent().getExtras().getString("user");
 
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
@@ -276,13 +264,6 @@ public class MainActivity extends BaseActivity implements BaseFragment.FragmentN
         super.onSaveInstanceState(outState);
         if (mNavController != null) {
             mNavController.onSaveInstanceState(outState);
-        }
-    }
-
-    @Override
-    public void pushFragment(Fragment fragment) {
-        if (mNavController != null) {
-            mNavController.pushFragment(fragment);
         }
     }
 

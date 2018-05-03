@@ -128,6 +128,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
         // Listeners
         songProgressBar.setOnSeekBarChangeListener(this); // Important
+        songProgressBar.setEnabled(false);
         mp.setOnCompletionListener(this); // Important
 
 
@@ -153,6 +154,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                     } else {
                         // Resume song
                         if (mp != null) {
+                            if(songProgressBar.isEnabled())songProgressBar.setEnabled(true);
                             mp.start();
                             // Changing button image to pause button
                             btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);

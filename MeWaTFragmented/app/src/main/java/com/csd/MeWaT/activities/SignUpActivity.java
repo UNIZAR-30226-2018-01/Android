@@ -294,7 +294,7 @@ public class SignUpActivity extends AppCompatActivity {
                 Intent returnIntent = new Intent();
                 returnIntent.putExtra("user",mUser);
                 returnIntent.putExtra("pass",mPassword);
-                setResult(Activity.RESULT_OK, returnIntent);
+                setResult(Activity.RESULT_OK);
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));

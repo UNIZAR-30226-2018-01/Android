@@ -163,7 +163,7 @@ public class SearchFragment extends BaseFragment {
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("titulo", query);
+                        .appendQueryParameter("titulo", query);             //Añade parametros
                 String query = builder.build().getEncodedQuery();
 
                 OutputStream os = client.getOutputStream();

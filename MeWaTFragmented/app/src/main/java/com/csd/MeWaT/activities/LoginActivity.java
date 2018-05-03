@@ -1,10 +1,14 @@
 package com.csd.MeWaT.activities;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 
 import android.net.Uri;
@@ -20,6 +24,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -62,6 +67,20 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //TODO: Escribir if version android >api 15
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 150+1);
+
+
+        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        if(sp.getBoolean("userAuthed",false)){
+            Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
+            MainActivity.putExtra("idSesion",sp.getString("idSesion",""));
+            MainActivity.putExtra("user",sp.getString("username",""));
+            LoginActivity.this.startActivity(MainActivity);
+            finish();
+        }
         setContentView(R.layout.activity_login);
         // Set up the login form.
         mUserView = (EditText) findViewById(R.id.User);
@@ -100,10 +119,6 @@ public class LoginActivity extends AppCompatActivity {
         mLoginFormView = findViewById(R.id.singup_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        if(getIntent().hasExtra("idSesion")){
-           idSesion= getIntent().getExtras().getString("idSesion");
-           Username= getIntent().getExtras().getString("username");
-        }
     }
 
 
@@ -301,10 +316,16 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra("idSesion",idSesion);
-                returnIntent.putExtra("user",Username);
-                setResult(Activity.RESULT_OK, returnIntent);
+                SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
+
+                p.edit().putBoolean("userAuthed",true).apply();
+                p.edit().putString("idSesion",idSesion).apply();
+                p.edit().putString("username",Username).apply();
+
+                Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
+                MainActivity.putExtra("idSesion",idSesion);
+                MainActivity.putExtra("user",Username);
+                LoginActivity.this.startActivity(MainActivity);
                 finish();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
@@ -328,10 +349,8 @@ public class LoginActivity extends AppCompatActivity {
                 String user = returnIntent.getStringExtra("user");
                 mAuthTask = new UserLoginTask(user,pass);
                 mAuthTask.execute();
-                returnIntent.putExtra("idSesion",idSesion);
-                returnIntent.putExtra("user",Username);
-                setResult(Activity.RESULT_OK, returnIntent);
-                finish();
+            }else{
+                Toast.makeText(this.getApplicationContext(), "Error Signing Up", Toast.LENGTH_SHORT).show();
             }
         }
     }

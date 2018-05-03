@@ -17,11 +17,6 @@ import butterknife.ButterKnife;
 
 public class SocialFragment extends BaseFragment{
 
-
-
-    @BindView(R.id.social_listView)
-    ListView social_listview;
-
     int fragCount;
 
 
