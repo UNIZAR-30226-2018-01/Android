@@ -38,6 +38,9 @@
     <string name="error_invalid_user">This user is invalid</string>
     <string name="user_photo">User\'s photo profile</string>
     <string name="buscar_cancion">Buscar cancion...</string>
+    <string name="guardar_contrasenya">Save password</string>
+    <string name="save_username">Save Username</string>
+    <string name="change_icon">change icon</string>
 
 
 </resources>
