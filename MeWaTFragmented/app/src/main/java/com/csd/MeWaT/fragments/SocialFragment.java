@@ -28,6 +28,9 @@ public class SocialFragment extends BaseFragment{
         return fragment;
     }
 
+    public SocialFragment(){
+
+    }
 
 
     @Override

@@ -2,13 +2,18 @@ package com.csd.MeWaT.fragments;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.view.LayoutInflater;
+import android.view.PointerIcon;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -70,6 +75,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     TextView songAlbumLabel;
 
     // Media Player
+    private Integer lastindex;
     private MediaPlayer mp;
     private Handler mHandler = new Handler();;
     private SongsManager songManager;
@@ -101,35 +107,53 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         // Mediaplayer
         mp = MainActivity.mp;
         songManager = new SongsManager();
+        lastindex = MainActivity.songnumber;
         // Getting all songs list
         songsList = MainActivity.songsList;
+        HashMap<String, String> song = new HashMap<String, String>();
+        song.put("songTitle", "Hola");
+        song.put("songPath","http://mewat1718.ddns.net:8080/ps/music/mewat/Hola.mp3");
+        songsList.add(song);
+        song = new HashMap<String, String>();
+        song.put("songTitle", "Hola");
+        song.put("songPath","http://mewat1718.ddns.net:8080/ps/music/mewat/Flo%20Rida%20-%20Hola.mp3");
+        songsList.add(song);
 
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
         final View view = inflater.inflate(R.layout.fragment_player, container, false);
         ButterKnife.bind(this, view);
 
 
         btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
-        btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+        if(!mp.isPlaying()) btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+        else btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
         btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
         btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
         btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
         btnPlaylist.setImageResource(R.drawable.ic_queue_music_black_24dp);
 
+
         utils = new Utils();
 
         // Listeners
         songProgressBar.setOnSeekBarChangeListener(this); // Important
-        songProgressBar.setEnabled(false);
-        songProgressBar.setBackgroundColor(6730751);
+        if(!mp.isPlaying())songProgressBar.setEnabled(false);
+        else{
+            songProgressBar.setProgress(0);
+            songProgressBar.setMax(100);
+
+            // Updating progress bar
+            updateProgressBar();
+        }
+        songProgressBar.getProgressDrawable().setColorFilter(ContextCompat.getColor(getContext(), R.color.blue), PorterDuff.Mode.SRC_IN );
         mp.setOnCompletionListener(this); // Important
 
 
@@ -147,15 +171,14 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                 // check for already playing
                 if(songsList.size()>0) {
                     if (mp.isPlaying()) {
-                        if (mp != null) {
                             mp.pause();
                             // Changing button image to play button
                             btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-                        }
                     } else {
                         // Resume song
                         if (mp != null) {
-                            if(songProgressBar.isEnabled())songProgressBar.setEnabled(true);
+                            if(!MainActivity.resumed)playSong(lastindex);
+                            if(!songProgressBar.isEnabled())songProgressBar.setEnabled(true);
                             mp.start();
                             // Changing button image to pause button
                             btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
@@ -295,6 +318,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     public void  playSong(int songIndex) {
         // Play song
         try {
+            MainActivity.resumed=true;
             mp.reset();
             mp.setDataSource(songsList.get(songIndex).get("songPath"));
             mp.prepare();
@@ -302,6 +326,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
             // Displaying Song title
             String songTitle = songsList.get(songIndex).get("songTitle");
             songTitleLabel.setText(songTitle);
+            MainActivity.songnumber=songIndex;
 
             // Changing Button Image to pause image
             btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
@@ -325,6 +350,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
      * Update timer on seekbar
      * */
     public void updateProgressBar() {
+
         mHandler.postDelayed(mUpdateTimeTask, 100);
     }
 
@@ -392,6 +418,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     @Override
     public void onCompletion(MediaPlayer arg0) {
 
+
         // check for repeat is ON or OFF
         if(isRepeat==2){
             // repeat is on play same song again
@@ -414,6 +441,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                 }
             }
         }
+        lastindex = currentSongIndex;
     }
 
     @Override

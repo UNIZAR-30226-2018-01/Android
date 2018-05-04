@@ -25,7 +25,6 @@ public class HomeFragment extends BaseFragment {
     @BindView(R.id.btn_click_me)
     Button btnClickMe;
 
-
     int fragCount;
 
 
