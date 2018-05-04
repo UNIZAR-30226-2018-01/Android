@@ -1,32 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="50dp">
+    android:layout_height="50dp"
+    android:orientation="horizontal"
+    android:layout_margin="15dp">
+
+    <ImageView
+        android:layout_width="50dp"
+        android:layout_height="match_parent" />
 
     <LinearLayout
         android:layout_width="120dp"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_gravity="center">
+        android:layout_gravity="center"
+        android:orientation="vertical">
+
         <TextView
-            android:layout_margin="2dp"
             android:id="@+id/songTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
             android:text="TextView" />
+
         <TextView
-            android:layout_margin="2dp"
             android:id="@+id/albumTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="2dp"
             android:text="TextView" />
     </LinearLayout>
 
     <TextView
         android:id="@+id/artistTitle"
+        android:layout_height="match_parent"
+        android:layout_weight="0.9"
+        android:layout_width="wrap_content"
+        android:gravity="center_vertical"
         android:layout_gravity="center"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:paddingRight="-90dp"
         android:text="TextView" />
+    <ImageView
+        android:id="@+id/more_button"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="center"
+        android:background="@color/transparent"
+        app:srcCompat="@drawable/ic_more_vert_black_24dp" />
+
 </LinearLayout>
