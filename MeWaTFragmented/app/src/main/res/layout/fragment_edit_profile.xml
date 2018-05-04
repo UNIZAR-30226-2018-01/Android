@@ -51,7 +51,6 @@
                     android:id="@+id/userChange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/prompt_User"
                     android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true" />
@@ -75,10 +74,21 @@
             android:layout_below="@id/nameLinear"
             >
             <EditText
+                android:id="@+id/oldPswd"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/old_password"
+                android:imeActionId="6"
+                android:imeActionLabel="@string/action_sign_up_short"
+                android:imeOptions="actionUnspecified"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true" />
+            <EditText
                 android:id="@+id/pswdChange"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/prompt_password"
+                android:hint="@string/new_password"
                 android:imeActionId="6"
                 android:imeActionLabel="@string/action_sign_in_short"
                 android:imeOptions="actionUnspecified"
@@ -89,7 +99,7 @@
                 android:id="@+id/pswdChangeRep"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="@string/prompt_passwordRep"
+                android:hint="@string/repeat_new_password"
                 android:imeActionId="6"
                 android:imeActionLabel="@string/action_sign_up_short"
                 android:imeOptions="actionUnspecified"

@@ -1,6 +1,8 @@
 package com.csd.MeWaT.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -12,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
@@ -48,6 +51,7 @@ public class SocialFragment extends BaseFragment{
      **********************************************************************/
 
     @BindView(R.id.userChange) EditText userText;
+    @BindView(R.id.oldPswd) EditText oldPasword;
     @BindView(R.id.pswdChange) EditText pasText;
     @BindView(R.id.pswdChangeRep) EditText pasRepText;
     @BindView(R.id.btton_change_icon) Button chgIconBton;
@@ -64,7 +68,7 @@ public class SocialFragment extends BaseFragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_edit_profile, container, false);
         ButterKnife.bind(this, view);
-
+        userText.setText(MainActivity.user);
         chgNameBton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -82,15 +86,19 @@ public class SocialFragment extends BaseFragment{
         chgPswdBton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                String old = oldPasword.getText().toString();
                 String pasword = pasText.getText().toString();
                 String paswordRep = pasRepText.getText().toString();
                 if (!pasword.isEmpty()){
-                    if (pasword.equals(paswordRep)){
-                        ChangePaswdTask changTask = new ChangePaswdTask(pasword, paswordRep);
-                        changTask.execute();
-                    }
-                    else {
-                        pasRepText.setError("The password isnt the same");
+                    if (!old.isEmpty()) {
+                        if (pasword.equals(paswordRep)) {
+                            ChangePaswdTask changTask = new ChangePaswdTask(old, pasword, paswordRep);
+                            changTask.execute();
+                        } else {
+                            pasRepText.setError("The password isnt the same");
+                        }
+                    }else {
+                        oldPasword.setError("This filed cannot be empty");
                     }
                 }
                 else {
@@ -98,7 +106,7 @@ public class SocialFragment extends BaseFragment{
                 }
             }
         });
-        return super.onCreateView(inflater, container, savedInstanceState);
+        return view;
     }
 
     public class ChangeNameTask extends AsyncTask<Void, Void, Boolean> {
@@ -162,6 +170,10 @@ public class SocialFragment extends BaseFragment{
                 JSONObject result = new JSONObject(tokener);
                 if (result.has("error")){
                     return false;
+                }else{
+                    MainActivity.user=UserName;
+                    SharedPreferences sp = getActivity().getPreferences(Context.MODE_PRIVATE);
+                    sp.edit().putString("username",UserName).apply();
                 }
             }catch (IOException e){
                 Throwable s = e.getCause();
@@ -171,6 +183,17 @@ public class SocialFragment extends BaseFragment{
             }
             return true;
         }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success){
+                Toast.makeText(getActivity().getApplicationContext(), "Username has been changed! ", Toast.LENGTH_SHORT).show();
+                userText.setText(MainActivity.user);
+            }
+            else {
+                Toast.makeText(getActivity().getApplicationContext(), "Sorry, something was wrong!", Toast.LENGTH_SHORT).show();
+            }
+        }
     }
 
     public class ChangePaswdTask extends AsyncTask<Void, Void, Boolean>{
@@ -178,10 +201,10 @@ public class SocialFragment extends BaseFragment{
         private final String paswdRep;
         private final String oldPwsd;
 
-        ChangePaswdTask(String pswd, String pswdRep){
+        ChangePaswdTask(String oldpaswd, String pswd, String pswdRep){
             paswd = pswd;
             paswdRep = pswdRep;
-            oldPwsd = null;
+            oldPwsd = oldpaswd;
         }
 
         @Override
@@ -246,6 +269,23 @@ public class SocialFragment extends BaseFragment{
                 return false;
             }
             return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success){
+                Toast.makeText(getActivity().getApplicationContext(), "Password has been changed ", Toast.LENGTH_SHORT).show();
+                oldPasword.getText().clear();
+                pasText.getText().clear();
+                pasRepText.getText().clear();
+            }
+            else {
+                Toast.makeText(getActivity().getApplicationContext(), "Sorry, something was wrong!", Toast.LENGTH_SHORT).show();
+                oldPasword.getText().clear();
+                pasText.getText().clear();
+                pasRepText.getText().clear();
+
+            }
         }
     }
 
