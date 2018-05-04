@@ -32,9 +32,10 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
-import com.csd.MeWaT.fragments.PlayerFragment;
+import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
+import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
@@ -47,7 +48,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends AppCompatActivity implements FragNavController.TransactionListener, FragNavController.RootFragmentListener, PlayerFragment.OnFragmentInteractionListener,MediaPlayer.OnCompletionListener   {
+public class MainActivity extends AppCompatActivity implements FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener   {
 
 
 
@@ -75,13 +76,16 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     @BindView(R.id.playTabPlayer)
     ImageButton playTabPlayer;
 
+    @BindView(R.id.expandPlayer)
+    ImageButton extendPlayer;
+
 
     private Handler mHandler = new Handler();;
 
     private int[] mTabIconsSelected = {
             R.drawable.tab_home,
             R.drawable.tab_search,
-            R.drawable.tab_player,
+            R.drawable.tab_share,
             R.drawable.tab_social,
             R.drawable.tab_profile};
 
@@ -125,6 +129,9 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         initToolbar();
 
         initTab();
+
+        SongProgressBarTabPlayer.setProgress(0);
+        SongProgressBarTabPlayer.setMax(100);
 
         fragmentHistory = new FragmentHistory();
 
@@ -183,6 +190,25 @@ public class MainActivity extends AppCompatActivity implements FragNavController
                         }
                     }
                 }
+            }
+        });
+
+
+        final Activity i = this;
+        extendPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent player = new Intent(i,PlayerActivity.class);
+                i.startActivity(player);
+            }
+        });
+
+        tabPlayerLayout.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if(b)songTitleTabPlayer.setText(songsList.get(songnumber).get("songTitle"));
+                // Updating progress bar
+                updateProgressBar();
             }
         });
 
@@ -418,7 +444,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             case FragNavController.TAB2:
                 return new SearchFragment();
             case FragNavController.TAB3:
-                return new PlayerFragment();
+                return new UploadFragment();
             case FragNavController.TAB4:
                 return new SocialFragment();
             case FragNavController.TAB5:
@@ -464,10 +490,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     }
 
 
-    @Override
-    public void onFragmentInteraction(Uri uri){
-        // empty
-    }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {

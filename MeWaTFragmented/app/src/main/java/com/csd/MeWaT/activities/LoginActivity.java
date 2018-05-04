@@ -69,8 +69,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //TODO: Escribir if version android >api 15
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 150+1);
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.INTERNET}
+                , 150);
+
 
 
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);

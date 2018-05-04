@@ -29,7 +29,6 @@ public class ProfileFragment extends BaseFragment{
     @BindView(R.id.settingsButton)
     ImageButton settingsButton;
 
-    int fragCount;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,14 +58,8 @@ public class ProfileFragment extends BaseFragment{
             @Override
             public void onClick(View v) {
 
-                if (mFragmentNavigation != null) {
-                    mFragmentNavigation.pushFragment(SocialFragment.newInstance(0));
-
-                }
             }
         });
-
-        ( (MainActivity)getActivity()).updateToolbarTitle((fragCount == 0) ? "Home" : "Sub Home "+fragCount);
     }
 
 

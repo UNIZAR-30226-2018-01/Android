@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".fragments.PlayerFragment">
+    tools:context=".activities.PlayerActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -13,6 +13,13 @@
 
         <!-- Song info-->
 
+        <ImageButton
+            android:id="@+id/minimizePlayer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:srcCompat="@drawable/ic_expand_more_black_24dp"
+            android:background="@color/transparent"
+            android:layout_margin="30dp"/>
         <TextView
             android:id="@+id/songTitle"
             android:textColor="@color/black"

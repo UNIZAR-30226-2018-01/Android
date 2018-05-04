@@ -1,29 +1,20 @@
-package com.csd.MeWaT.fragments;
+package com.csd.MeWaT.activities;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.view.LayoutInflater;
-import android.view.PointerIcon;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
-import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.activities.PlayListActivity;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
@@ -35,18 +26,7 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link PlayerFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link PlayerFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener  {
-
-
-    private OnFragmentInteractionListener mListener;
+public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener, SeekBar.OnSeekBarChangeListener  {
 
     @BindView(R.id.btnPlay)
     ImageButton btnPlay;
@@ -60,6 +40,9 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     ImageButton btnRepeat;
     @BindView(R.id.btnShuffle)
     ImageButton btnShuffle;
+
+    @BindView(R.id.minimizePlayer)
+    ImageButton minimizePlayer;
 
     @BindView(R.id.songProgressBar)
     SeekBar songProgressBar;
@@ -85,24 +68,6 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
     private int isRepeat = 0;
     private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
 
-    public PlayerFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @return A new instance of fragment PlayerFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PlayerFragment newInstance() {
-        PlayerFragment fragment = new PlayerFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,7 +75,7 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
         // Mediaplayer
         mp = MainActivity.mp;
-        songManager = new SongsManager();
+
         lastindex = MainActivity.songnumber;
         // Getting all songs list
         songsList = MainActivity.songsList;
@@ -123,18 +88,15 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
         song.put("songPath","http://mewat1718.ddns.net:8080/ps/music/mewat/Flo%20Rida%20-%20Hola.mp3");
         songsList.add(song);
 
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.fragment_player, container, false);
-        ButterKnife.bind(this, view);
+        setContentView(R.layout.activity_player);
+        ButterKnife.bind(this);
 
 
         btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
+
         if(!mp.isPlaying()) btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
         else btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+
         btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
         btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
         btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
@@ -153,17 +115,9 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
             // Updating progress bar
             updateProgressBar();
         }
-        songProgressBar.getProgressDrawable().setColorFilter(ContextCompat.getColor(getContext(), R.color.blue), PorterDuff.Mode.SRC_IN );
+        songProgressBar.getProgressDrawable().setColorFilter(ContextCompat.getColor(this, R.color.blue), PorterDuff.Mode.SRC_IN );
         mp.setOnCompletionListener(this); // Important
-
-
-
-
-        return view;
-    }
-
-    @Override
-    public void onViewCreated(final View view, @Nullable Bundle bundle){
+        // Funcionalidad
 
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -171,9 +125,9 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
                 // check for already playing
                 if(songsList.size()>0) {
                     if (mp.isPlaying()) {
-                            mp.pause();
-                            // Changing button image to play button
-                            btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+                        mp.pause();
+                        // Changing button image to play button
+                        btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
                     } else {
                         // Resume song
                         if (mp != null) {
@@ -243,17 +197,17 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
             public void onClick(View arg0) {
                 if(isRepeat == 2){
                     isRepeat = 0;
-                    Toast.makeText(getActivity().getApplicationContext(), "Repeat is OFF", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Repeat is OFF", Toast.LENGTH_SHORT).show();
                     btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
                 }else if (isRepeat == 0){
                     // make repeat to true
                     isRepeat = 1;
-                    Toast.makeText(getActivity().getApplicationContext(), "Repeat all is ON", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext().getApplicationContext(), "Repeat all is ON", Toast.LENGTH_SHORT).show();
                     btnRepeat.setImageResource(R.drawable.ic_repeat_all_blue_24dp);
                 }else if (isRepeat == 1){
                     // make repeat to true
                     isRepeat = 2;
-                    Toast.makeText(getActivity().getApplicationContext(), "Repeat one is ON", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext().getApplicationContext(), "Repeat one is ON", Toast.LENGTH_SHORT).show();
                     btnRepeat.setImageResource(R.drawable.ic_repeat_one_blue_24dp);
                 }
             }
@@ -269,12 +223,12 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
             public void onClick(View arg0) {
                 if(isShuffle){
                     isShuffle = false;
-                    Toast.makeText(getActivity().getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext().getApplicationContext(), "Shuffle is OFF", Toast.LENGTH_SHORT).show();
                     btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
                 }else{
                     // make repeat to true
                     isShuffle= true;
-                    Toast.makeText(getActivity().getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext().getApplicationContext(), "Shuffle is ON", Toast.LENGTH_SHORT).show();
                     btnShuffle.setImageResource(R.drawable.ic_shuffle_blue_24dp);
                 }
             }
@@ -288,11 +242,17 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
 
             @Override
             public void onClick(View arg0) {
-                Intent i = new Intent(view.getContext(), PlayListActivity.class);
+                Intent i = new Intent(getApplicationContext(), PlayListActivity.class);
                 startActivityForResult(i, 100);
             }
         });
 
+        minimizePlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                finish();
+            }
+        });
     }
 
     /**
@@ -450,37 +410,4 @@ public class PlayerFragment extends Fragment implements MediaPlayer.OnCompletion
         mp.release();
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-
-
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
-    }
 }

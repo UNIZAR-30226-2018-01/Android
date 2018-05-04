@@ -30,6 +30,10 @@
         <activity
             android:name=".activities.PlayListActivity"
             android:label="@string/title_activity_playlist"/>
+
+        <activity
+            android:name=".activities.PlayerActivity"
+            android:label="@string/title_activity_player"/>
     </application>
 
 </manifest>
