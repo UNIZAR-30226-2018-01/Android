@@ -19,6 +19,7 @@
                 android:layout_height="150dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginTop="40dp"
+                android:background="@drawable/rounded_corner"
                 app:srcCompat="@drawable/ic_favorite_black_24dp" />
 
             <TextView
@@ -44,6 +45,7 @@
                 android:layout_height="150dp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="40dp"
+                android:background="@drawable/rounded_corner"
                 app:srcCompat="@drawable/ic_view_list_black" />
 
             <TextView
@@ -70,7 +72,9 @@
                 android:layout_width="150dp"
                 android:layout_height="150dp"
                 android:layout_marginLeft="20dp"
+                android:background="@drawable/rounded_corner"
                 android:layout_marginTop="0dp"
+
                 app:srcCompat="@drawable/ic_format_list_numbered_black" />
             <TextView
                 android:id="@+id/texto_listas_top"
@@ -91,8 +95,9 @@
                 android:id="@+id/recientes"
                 android:layout_width="150dp"
                 android:layout_height="150dp"
-                android:layout_marginLeft="20dp"
+                android:layout_marginLeft="15dp"
                 android:layout_marginTop="0dp"
+                android:background="@drawable/rounded_corner"
                 app:srcCompat="@drawable/ic_access_time_black" />
             <TextView
                 android:id="@+id/texto_recientes"
