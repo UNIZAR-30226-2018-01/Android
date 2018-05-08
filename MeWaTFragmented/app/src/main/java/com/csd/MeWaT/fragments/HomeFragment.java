@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -22,8 +23,12 @@ import butterknife.ButterKnife;
 public class HomeFragment extends BaseFragment {
 
 
-    @BindView(R.id.btn_click_me)
-    Button btnClickMe;
+    @BindView(R.id.favoritos)
+    ImageButton Favoritos;
+    @BindView(R.id.listas)
+    ImageButton Listas;
+    @BindView(R.id.listas_top)
+    ImageButton Listas_top;
 
 
     int fragCount;
@@ -46,7 +51,7 @@ public class HomeFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
+        //setHasOptionsMenu(true);
     }
 
     @Override
