@@ -44,6 +44,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import android.content.Context;
+import android.util.Log;
+
 /**
  * A login screen that offers login via User/password.
  */
@@ -223,8 +241,23 @@ public class LoginActivity extends AppCompatActivity {
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
+    public static Boolean connectionIsHttps (String urlString){
+        if (urlString.regionMatches(0, "https", 0, 5)){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
-
+    public static String getHostNameFromUrl (String urlString){
+        if (connectionIsHttps(urlString)){
+            return urlString.substring(8,urlString.indexOf("/", 8));
+        }
+        else{
+            return urlString.substring(7,urlString.indexOf("/", 7));
+        }
+    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -244,17 +277,19 @@ public class LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
             String title,info1;InputStream info;
 
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion");
+                url = new URL("https://mewat1718.ddns.net/ps/IniciarSesion");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
 
                 Uri.Builder builder = new Uri.Builder()
@@ -281,7 +316,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -294,6 +329,7 @@ public class LoginActivity extends AppCompatActivity {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 if (!result.has("error")){
                     Username = (String) result.get("login");
@@ -304,7 +340,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
             }catch (IOException e){
-                Throwable s = e.getCause();
+                System.out.println(e);
                 return false;
             } catch (JSONException e) {
                 return false;

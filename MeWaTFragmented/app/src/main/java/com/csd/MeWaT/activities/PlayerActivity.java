@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
@@ -66,7 +67,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     private int currentSongIndex = 0;
     private boolean isShuffle = false;
     private int isRepeat = 0;
-    private ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
+    private ArrayList<Song> songsList = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -79,14 +80,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         lastindex = MainActivity.songnumber;
         // Getting all songs list
         songsList = MainActivity.songsList;
-        HashMap<String, String> song = new HashMap<String, String>();
-        song.put("songTitle", "Hola");
-        song.put("songPath","http://mewat1718.ddns.net:8080/ps/music/mewat/Hola.mp3");
-        songsList.add(song);
-        song = new HashMap<String, String>();
-        song.put("songTitle", "Hola");
-        song.put("songPath","http://mewat1718.ddns.net:8080/ps/music/mewat/Flo%20Rida%20-%20Hola.mp3");
-        songsList.add(song);
 
         setContentView(R.layout.activity_player);
         ButterKnife.bind(this);
@@ -280,11 +273,11 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         try {
             MainActivity.resumed=true;
             mp.reset();
-            mp.setDataSource(songsList.get(songIndex).get("songPath"));
+            mp.setDataSource(songsList.get(songIndex).getUrl());
             mp.prepare();
             mp.start();
             // Displaying Song title
-            String songTitle = songsList.get(songIndex).get("songTitle");
+            String songTitle = songsList.get(songIndex).getTitle();
             songTitleLabel.setText(songTitle);
             MainActivity.songnumber=songIndex;
 
@@ -407,7 +400,6 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     @Override
     public void onDestroy(){
         super.onDestroy();
-        mp.release();
     }
 
 }

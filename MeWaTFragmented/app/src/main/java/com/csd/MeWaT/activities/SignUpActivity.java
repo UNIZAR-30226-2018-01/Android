@@ -40,6 +40,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import javax.net.ssl.HttpsURLConnection;
+
 /**
  * A login screen that offers login via email/password.
  */
@@ -221,17 +223,18 @@ public class SignUpActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/RegistrarUsuario");
+                url = new URL("https://mewat1718.ddns.net/ps/RegistrarUsuario");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
-                client.setDoOutput(true);
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
@@ -245,8 +248,6 @@ public class SignUpActivity extends AppCompatActivity {
                 writer.write(query);
                 writer.flush();
                 writer.close();
-                int responseCode = client.getResponseCode();
-                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
             } catch (MalformedURLException e) {
                 return false;
             } catch (SocketTimeoutException e) {
@@ -257,7 +258,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -267,10 +268,11 @@ public class SignUpActivity extends AppCompatActivity {
                 }
 
                 // Parse into JSONObject
+
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
-
+                client.disconnect();
                 if (result.has("error")){
                     return false;
                 }

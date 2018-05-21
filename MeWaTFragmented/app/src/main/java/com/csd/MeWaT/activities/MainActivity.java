@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -15,34 +14,34 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.BoringLayout;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.ProgressBar;
-import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
-import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
+import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
+
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -90,9 +89,11 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             R.drawable.tab_profile};
 
     public static MediaPlayer mp;
-    public static ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
+    public static ArrayList<Song> songsList = new ArrayList<>();
     public static String user, idSesion;
     public static Integer songnumber=0;
+    public static Boolean isShuffle = false;
+    public static Integer isRepeat = 0;
     public static Boolean resumed = false;
 
 
@@ -112,6 +113,15 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         resumed = false;
         mp=new MediaPlayer();
 
+        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mp.start();
+                // Updating progress bar
+                updateProgressBar();
+            }
+        });
+
         mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
 
@@ -120,6 +130,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         user = getIntent().getExtras().getString("user");
 
         setContentView(R.layout.activity_main);
+        setSupportActionBar(toolbar);
         tabPlayerLayout = (LinearLayout) this.findViewById(R.id.tab_player_layout);
         ButterKnife.bind(this);
 
@@ -206,25 +217,28 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         tabPlayerLayout.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b)songTitleTabPlayer.setText(songsList.get(songnumber).get("songTitle"));
-                // Updating progress bar
-                updateProgressBar();
+                if(b){
+                    songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
+                    // Updating progress bar
+                    updateProgressBar();
+                }
+
             }
         });
 
 
     }
 
+
     public void  playSong(int songIndex) {
         // Play song
         try {
             resumed=true;
             mp.reset();
-            mp.setDataSource(songsList.get(songIndex).get("songPath"));
+            mp.setDataSource(songsList.get(songIndex).getUrl());
             mp.prepare();
-            mp.start();
             // Displaying Song title
-            String songTitle = songsList.get(songIndex).get("songTitle");
+            String songTitle = songsList.get(songIndex).getTitle();
             songTitleTabPlayer.setText(songTitle);
             songnumber=songIndex;
 
@@ -235,8 +249,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             SongProgressBarTabPlayer.setProgress(0);
             SongProgressBarTabPlayer.setMax(100);
 
-            // Updating progress bar
-            updateProgressBar();
+
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (IllegalStateException e) {
@@ -323,7 +336,13 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     @Override
     protected void onResume() {
+
         super.onResume();
+       if(resumed) songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
+
+        updateProgressBar();
+
+
     }
 
 
@@ -332,24 +351,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         super.onPause();
     }
 
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-
-        switch (item.getItemId()) {
-
-
-            case android.R.id.home:
-
-
-                onBackPressed();
-                return true;
-        }
-
-
-        return super.onOptionsItemSelected(item);
-
-    }
 
     @Override
     public void onBackPressed() {
@@ -419,7 +420,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     private void updateToolbar() {
         getSupportActionBar().setDisplayHomeAsUpEnabled(!mNavController.isRootFragment());
-        getSupportActionBar().setDisplayShowHomeEnabled(!mNavController.isRootFragment());
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_arrow_back);
     }
 
@@ -469,30 +469,32 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == USER_AUTH){
-            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
-            if(resultCode == Activity.RESULT_OK){
-
-                p.edit().putBoolean("userAuthed",true).apply();
-                p.edit().putString("idSesion",data.getStringExtra("idSesion")).apply();
-                p.edit().putString("username",data.getStringExtra("user")).apply();
-
-                Toast.makeText(this,"WELCOME: "+data.getStringExtra("user"),Toast.LENGTH_SHORT).show();
-            }
-            if(resultCode != Activity.RESULT_OK ){
-                Intent LoginActivity = new Intent(this,com.csd.MeWaT.activities.LoginActivity.class);
-                this.startActivityForResult(LoginActivity,USER_AUTH);
-                p.edit().putBoolean("userAuthed",false).apply();
-            }
-        }
-    }
-
-
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
 
+        // check for repeat is ON or OFF
+        if(isRepeat==2){
+            // repeat is on play same song again
+            playSong(songnumber);
+        } else if(isShuffle){
+            // shuffle is on - play a random song
+            Random rand = new Random();
+            songnumber = rand.nextInt((songsList.size() - 1) - 0 + 1) + 0;
+            playSong(songnumber);
+        } else{
+            // no repeat or shuffle ON - play next song
+            if(songnumber < (songsList.size() - 1)){
+                songnumber = songnumber + 1;
+                playSong(songnumber);
+            }else{
+                if(isRepeat == 1){
+                    // play first song
+                    playSong(0);
+                    songnumber = 0;
+                }
+            }
+        }
     }
+
 }

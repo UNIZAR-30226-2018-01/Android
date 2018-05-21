@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -41,6 +42,8 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -127,6 +130,8 @@ public class SearchFragment extends BaseFragment {
         search_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity.songsList = resultList;
+                MainActivity.songnumber = (int) l;
 
             }
         });
@@ -148,17 +153,19 @@ public class SearchFragment extends BaseFragment {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
             resultList = new ArrayList<>();
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/BuscarCancionTitulo");
+                url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionTitulo");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -183,7 +190,7 @@ public class SearchFragment extends BaseFragment {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -197,6 +204,7 @@ public class SearchFragment extends BaseFragment {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
 
+                client.disconnect();
                 if (!result.has("error")){
 
                     JSONArray resultArray = result.getJSONArray("canciones");
@@ -206,7 +214,7 @@ public class SearchFragment extends BaseFragment {
                                 jsObj.getString("nombreArtista"),
                                 jsObj.getString("nombreAlbum"),
                                 jsObj.getString("genero")
-                                //,jsObj.getString("url")
+                                ,jsObj.getString("url")
                                 )
                         );
                     }
@@ -234,7 +242,7 @@ public class SearchFragment extends BaseFragment {
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
                     temp.put("album",s.getAlbum());
-                    temp.put("artist",s.getArtista());
+                    temp.put("artist",s.getArtist());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();
@@ -250,6 +258,7 @@ public class SearchFragment extends BaseFragment {
 
         }
     }
+
 
 
 }
