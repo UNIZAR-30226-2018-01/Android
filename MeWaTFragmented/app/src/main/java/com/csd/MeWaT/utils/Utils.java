@@ -1,6 +1,7 @@
 package com.csd.MeWaT.utils;
 
 import android.app.ProgressDialog;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -16,6 +17,7 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.v4.content.ContextCompat;
@@ -30,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -41,6 +44,63 @@ import java.util.TreeSet;
 public class Utils {
 
 
+
+    /**
+     * Used to get file detail from uri.
+     * <p>
+     * 1. Used to get file detail (name & size) from uri.
+     * 2. Getting file details from uri is different for different uri scheme,
+     * 2.a. For "File Uri Scheme" - We will get file from uri & then get its details.
+     * 2.b. For "Content Uri Scheme" - We will get the file details by querying content resolver.
+     *
+     * @param uri Uri.
+     * @return file detail.
+     */
+    public static FileDetail getFileDetailFromUri(final Context context, final Uri uri) {
+        FileDetail fileDetail = null;
+        if (uri != null) {
+            fileDetail = new FileDetail();
+            // File Scheme.
+            if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
+                File file = new File(uri.getPath());
+                fileDetail.fileName = file.getName();
+                fileDetail.fileSize = file.length();
+            }
+            // Content Scheme.
+            else if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+                Cursor returnCursor =
+                        context.getContentResolver().query(uri, null, null, null, null);
+                if (returnCursor != null && returnCursor.moveToFirst()) {
+                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
+                    int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
+                    fileDetail.fileName = returnCursor.getString(nameIndex);
+                    fileDetail.fileSize = returnCursor.getLong(sizeIndex);
+                    returnCursor.close();
+                }
+            }
+        }
+        return fileDetail;
+    }
+    /**
+     * File Detail.
+     * <p>
+     * 1. Model used to hold file details.
+     */
+    public static class FileDetail {
+
+        // fileSize.
+        public String fileName;
+
+        // fileSize in bytes.
+        public long fileSize;
+
+        /**
+         * Constructor.
+         */
+        public FileDetail() {
+
+        }
+    }
     public static final void showToast(Context context, String message) {
 
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show();

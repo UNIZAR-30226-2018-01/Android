@@ -40,9 +40,12 @@ import java.net.URL;
 
 import com.csd.MeWaT.R;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * A login screen that offers login via User/password.
@@ -242,17 +245,19 @@ public class LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
             String title,info1;InputStream info;
 
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/IniciarSesion");
+                url = new URL("https://mewat1718.ddns.net/ps/IniciarSesion");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
 
                 Uri.Builder builder = new Uri.Builder()
@@ -279,7 +284,7 @@ public class LoginActivity extends AppCompatActivity {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+                //client.disconnect();
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -292,6 +297,7 @@ public class LoginActivity extends AppCompatActivity {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 if (!result.has("error")){
                     Username = (String) result.get("login");
@@ -301,7 +307,8 @@ public class LoginActivity extends AppCompatActivity {
                 }
 
 
-            }catch (IOException e){
+            }
+            catch (IOException e){
                 Throwable s = e.getCause();
                 return false;
             } catch (JSONException e) {

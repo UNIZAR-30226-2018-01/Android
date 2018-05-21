@@ -24,6 +24,7 @@ import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,6 +42,8 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -148,17 +151,19 @@ public class SearchFragment extends BaseFragment {
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
             resultList = new ArrayList<>();
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/BuscarCancionTitulo");
+                url = new URL("http://mewat1718.ddns.net/ps/BuscarCancionTitulo");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -183,7 +188,7 @@ public class SearchFragment extends BaseFragment {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -196,6 +201,7 @@ public class SearchFragment extends BaseFragment {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 if (!result.has("error")){
 

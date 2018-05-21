@@ -6,21 +6,20 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
-import android.text.BoringLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.utils.Song;
+import com.csd.MeWaT.utils.Utils;
 
-import org.json.JSONArray;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -35,13 +34,14 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.util.ArrayList;
 
-import javax.microedition.khronos.egl.EGLDisplay;
 import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static android.app.Activity.RESULT_OK;
+import static com.csd.MeWaT.utils.Utils.getFileDetailFromUri;
 
 
 public class SocialFragment extends BaseFragment{
@@ -57,6 +57,8 @@ public class SocialFragment extends BaseFragment{
     @BindView(R.id.btton_change_icon) Button chgIconBton;
     @BindView(R.id.btton_change_name) Button chgNameBton;
     @BindView(R.id.btton_change_paswd) Button chgPswdBton;
+
+    public static final int PICK_IMAGE = 8;
 
 
     @Override
@@ -106,6 +108,22 @@ public class SocialFragment extends BaseFragment{
                 }
             }
         });
+
+        chgIconBton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                getIntent.setType("image/*");
+
+                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                pickIntent.setType("image/*");
+
+                Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
+
+                startActivityForResult(chooserIntent, PICK_IMAGE);
+            }
+        });
         return view;
     }
 
@@ -121,15 +139,17 @@ public class SocialFragment extends BaseFragment{
         @Override
         protected Boolean doInBackground(Void... voids) {
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/CambiarNombre");
+                url = new URL("https://mewat1718.ddns.net/ps/CambiarNombre");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -155,7 +175,7 @@ public class SocialFragment extends BaseFragment{
 
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -168,6 +188,7 @@ public class SocialFragment extends BaseFragment{
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
                 if (result.has("error")){
                     return false;
                 }else{
@@ -210,16 +231,19 @@ public class SocialFragment extends BaseFragment{
         @Override
         protected Boolean doInBackground(Void... voids) {
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/CambiarContrasenya");
+                url = new URL("https://mewat1718.ddns.net/ps/CambiarContrasenya");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
+
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
@@ -246,7 +270,7 @@ public class SocialFragment extends BaseFragment{
 
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -259,6 +283,8 @@ public class SocialFragment extends BaseFragment{
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
                 if (result.has("error")){
                     return false;
                 }
@@ -285,6 +311,17 @@ public class SocialFragment extends BaseFragment{
                 pasText.getText().clear();
                 pasRepText.getText().clear();
 
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        if (requestCode == PICK_IMAGE) {
+            if (resultCode == RESULT_OK){
+                Utils.FileDetail file;
+                file = getFileDetailFromUri(getContext(),data.getData());
             }
         }
     }

@@ -36,9 +36,12 @@ import java.net.URL;
 
 import com.csd.MeWaT.R;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+
+import javax.net.ssl.HttpsURLConnection;
 
 /**
  * A login screen that offers login via email/password.
@@ -221,16 +224,18 @@ public class SignUpActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
             try {
-                url = new URL("http://mewat1718.ddns.net:8080/ps/RegistrarUsuario");
+                url = new URL("https://mewat1718.ddns.net/ps/RegistrarUsuario");
 
-                client = (HttpURLConnection) url.openConnection();
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
 
                 Uri.Builder builder = new Uri.Builder()
@@ -257,7 +262,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -270,6 +275,7 @@ public class SignUpActivity extends AppCompatActivity {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 if (result.has("error")){
                     return false;
