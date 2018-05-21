@@ -25,6 +25,7 @@ import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -159,13 +160,21 @@ public class SearchFragment extends BaseFragment {
 
             resultList = new ArrayList<>();
             try {
+<<<<<<< HEAD
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionTitulo");
+=======
+                url = new URL("http://mewat1718.ddns.net/ps/BuscarCancionTitulo");
+>>>>>>> b964f4fa68ce5a46d3f29decdec9d96b8e82a842
 
                 client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+<<<<<<< HEAD
                 client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+=======
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+>>>>>>> b964f4fa68ce5a46d3f29decdec9d96b8e82a842
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -203,6 +212,7 @@ public class SearchFragment extends BaseFragment {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 client.disconnect();
                 if (!result.has("error")){
