@@ -39,14 +39,16 @@
     <string name="error_invalid_user">This user is invalid</string>
     <string name="user_photo">User\'s photo profile</string>
     <string name="buscar_cancion">Buscar cancion...</string>
-    <string name="title_activity_main">MainActivity</string>
-
+<<<<<<< HEAD
     <string name="guardar_contrasenya">Save password</string>
     <string name="save_username">Save Username</string>
     <string name="change_icon">change icon</string>
     <string name="old_password">Old password</string>
     <string name="new_password">New password</string>
     <string name="repeat_new_password">Repeat new password</string>
+=======
+    <string name="title_activity_main">MainActivity</string>
+>>>>>>> 346b4b5b5632a9147416ae9c3e07afa529d29248
 
 
 </resources>
