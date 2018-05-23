@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.BoringLayout;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -44,7 +45,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class SocialFragment extends BaseFragment{
+public class SettingsFragment extends BaseFragment{
 
     /**********************************************************************
      * Code for edit profile
@@ -289,18 +290,19 @@ public class SocialFragment extends BaseFragment{
         }
     }
 
+
     /*
     int fragCount;
 
-    public static SocialFragment newInstance(int instance) {
+    public static SettingsFragment newInstance(int instance) {
         Bundle args = new Bundle();
         args.putInt(ARGS_INSTANCE, instance);
-        SocialFragment fragment = new SocialFragment();
+        SettingsFragment fragment = new SettingsFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    public SocialFragment(){
+    public SettingsFragment(){
 
     }
 

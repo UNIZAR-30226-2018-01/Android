@@ -1,9 +1,14 @@
 package com.csd.MeWaT.fragments;
 
+import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
@@ -26,8 +31,6 @@ public class ProfileFragment extends BaseFragment{
     @BindView(R.id.user_image)
     ImageView user_image;
 
-    @BindView(R.id.settingsButton)
-    ImageButton settingsButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -41,9 +44,11 @@ public class ProfileFragment extends BaseFragment{
 
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
         ButterKnife.bind(this, view);
-
+        setHasOptionsMenu(true);
 
         username.setText(MainActivity.user);
+
+
 
         return view;
     }
@@ -54,12 +59,26 @@ public class ProfileFragment extends BaseFragment{
         super.onViewCreated(view, savedInstanceState);
 
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+    }
 
-            }
-        });
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actionbar_profile, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.settingsbutton:
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(new SettingsFragment());
+                }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+
     }
 
 

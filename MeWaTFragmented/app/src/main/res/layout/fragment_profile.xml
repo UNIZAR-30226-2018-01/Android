@@ -14,8 +14,8 @@
         android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:orientation="horizontal"
-        android:background="@color/grey_trans">
+        android:layout_margin="15dp"
+        android:orientation="horizontal">
 
 
         <de.hdodenhof.circleimageview.CircleImageView
@@ -36,16 +36,6 @@
             android:text="@string/prompt_User"
             android:textStyle="bold"
             android:layout_height="match_parent" />
-
-        <ImageButton
-            android:id="@+id/settingsButton"
-            android:layout_gravity="center"
-            android:layout_marginLeft="10dp"
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:background="@color/transparent"
-            app:srcCompat="@drawable/ic_settings_black_24dp"
-            />
     </LinearLayout>
 
     <ScrollView

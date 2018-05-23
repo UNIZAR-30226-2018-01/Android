@@ -213,8 +213,8 @@ public class SearchFragment extends BaseFragment {
                         resultList.add(new Song(jsObj.getString("tituloCancion"),
                                 jsObj.getString("nombreArtista"),
                                 jsObj.getString("nombreAlbum"),
-                                jsObj.getString("genero")
-                                ,jsObj.getString("url")
+                                jsObj.getString("genero"),
+                                jsObj.getString("ruta")
                                 )
                         );
                     }

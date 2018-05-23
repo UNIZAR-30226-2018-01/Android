@@ -214,7 +214,7 @@ public class HomeFragment extends BaseFragment {
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
                     temp.put("album",s.getAlbum());
-                    temp.put("artist",s.getArtista());
+                    temp.put("artist",s.getArtist());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();
@@ -326,7 +326,7 @@ public class HomeFragment extends BaseFragment {
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
                     temp.put("album",s.getAlbum());
-                    temp.put("artist",s.getArtista());
+                    temp.put("artist",s.getArtist());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();

@@ -1,9 +1,7 @@
 package com.csd.MeWaT.activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,11 +21,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
-import com.csd.MeWaT.fragments.SocialFragment;
+import com.csd.MeWaT.fragments.SettingsFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
@@ -39,7 +36,6 @@ import com.csd.MeWaT.views.FragNavController;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 import butterknife.BindArray;
@@ -47,7 +43,7 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends AppCompatActivity implements FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener   {
+public class MainActivity extends AppCompatActivity implements BaseFragment.FragmentNavigation,FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener   {
 
 
 
@@ -96,11 +92,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     public static Integer isRepeat = 0;
     public static Boolean resumed = false;
 
-
-    static final int USER_AUTH = 1;
     private FragNavController mNavController;
-
-
     private FragmentHistory fragmentHistory;
 
     private int returnpermission=150;
@@ -132,6 +124,8 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         setContentView(R.layout.activity_main);
         setSupportActionBar(toolbar);
         tabPlayerLayout = (LinearLayout) this.findViewById(R.id.tab_player_layout);
+
+
         ButterKnife.bind(this);
 
 
@@ -140,12 +134,10 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         initToolbar();
 
         initTab();
+        fragmentHistory = new FragmentHistory();
 
         SongProgressBarTabPlayer.setProgress(0);
         SongProgressBarTabPlayer.setMax(100);
-
-        fragmentHistory = new FragmentHistory();
-
 
         mNavController = FragNavController.newBuilder(savedInstanceState, getSupportFragmentManager(), R.id.content_frame)
                 .transactionListener(this)
@@ -217,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         tabPlayerLayout.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b){
+                if(b && mp.isPlaying()){
                     songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
                     // Updating progress bar
                     updateProgressBar();
@@ -327,8 +319,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
 
     private void switchTab(int position) {
-        if(position!=2)tabPlayerLayout.setVisibility(View.VISIBLE);
-        else tabPlayerLayout.setVisibility(View.GONE);
         mNavController.switchTab(position);
         updateToolbarTitle(position);
     }
@@ -338,9 +328,10 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     protected void onResume() {
 
         super.onResume();
-       if(resumed) songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
-
-        updateProgressBar();
+       if(mp.isPlaying()){
+           songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
+            updateProgressBar();
+       }
 
 
     }
@@ -352,51 +343,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     }
 
 
-    @Override
-    public void onBackPressed() {
-
-        if (!mNavController.isRootFragment()) {
-            mNavController.popFragment();
-        } else {
-
-            if (fragmentHistory.isEmpty()) {
-                super.onBackPressed();
-            } else {
-
-
-                if (fragmentHistory.getStackSize() > 1) {
-
-                    int position = fragmentHistory.popPrevious();
-
-                    switchTab(position);
-
-                    updateTabSelection(position);
-
-                } else {
-
-                    switchTab(0);
-
-                    updateTabSelection(0);
-
-                    fragmentHistory.emptyStack();
-                }
-            }
-
-        }
-    }
-
-
-    private void updateTabSelection(int currentTab){
-
-        for (int i = 0; i <  TABS.length; i++) {
-            TabLayout.Tab selectedTab = bottomTabLayout.getTabAt(i);
-            if(currentTab != i) {
-                selectedTab.getCustomView().setSelected(false);
-            }else{
-                selectedTab.getCustomView().setSelected(true);
-            }
-        }
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -446,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             case FragNavController.TAB3:
                 return new UploadFragment();
             case FragNavController.TAB4:
-                return new SocialFragment();
+                return new SettingsFragment();
             case FragNavController.TAB5:
                 return new ProfileFragment();
 
@@ -469,6 +415,77 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     }
 
+
+    @Override
+    public void pushFragment(Fragment fragment) {
+        if (mNavController != null) {
+            mNavController.pushFragment(fragment);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+
+
+            case android.R.id.home:
+
+
+                onBackPressed();
+                return true;
+        }
+
+
+        return super.onOptionsItemSelected(item);
+
+    }
+
+    @Override
+    public void onBackPressed() {
+
+        if (!mNavController.isRootFragment()) {
+            mNavController.popFragment();
+        } else {
+
+            if (fragmentHistory.isEmpty()) {
+                super.onBackPressed();
+            } else {
+
+
+                if (fragmentHistory.getStackSize() > 1) {
+
+                    int position = fragmentHistory.popPrevious();
+
+                    switchTab(position);
+
+                    updateTabSelection(position);
+
+                } else {
+
+                    switchTab(4);
+
+                    updateTabSelection(4);
+
+                    fragmentHistory.emptyStack();
+                }
+            }
+
+        }
+    }
+
+
+    private void updateTabSelection(int currentTab){
+
+        for (int i = 0; i <  TABS.length; i++) {
+            TabLayout.Tab selectedTab = bottomTabLayout.getTabAt(i);
+            if(currentTab != i) {
+                selectedTab.getCustomView().setSelected(false);
+            }else{
+                selectedTab.getCustomView().setSelected(true);
+            }
+        }
+    }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
