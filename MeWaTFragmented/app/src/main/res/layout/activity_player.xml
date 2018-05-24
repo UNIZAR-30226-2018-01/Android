@@ -20,15 +20,16 @@
             app:srcCompat="@drawable/ic_expand_more_black_24dp"
             android:background="@color/transparent"
             android:layout_margin="30dp"/>
+
         <TextView
             android:id="@+id/songTitle"
-            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="33dp"
-            android:text="" />
+            android:layout_marginTop="68dp"
+            android:text=""
+            android:textColor="@color/black" />
 
         <TextView
             android:id="@+id/albumTitle"
@@ -60,7 +61,7 @@
             android:layout_below="@+id/albumTitle"
             android:layout_above="@+id/timerDisplay"
             android:contentDescription="@string/album_thumbnail"
-            android:src="@drawable/logo"
+            android:src="@drawable/ic_launcher"
             app:civ_border_color="@color/black"
             app:civ_border_width="2dp" />
 

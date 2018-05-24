@@ -25,9 +25,9 @@ import android.widget.TextView;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
-import com.csd.MeWaT.fragments.SettingsFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
+import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Song;
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
 
-    private int returnpermission=150;
 
 
     @Override
@@ -185,9 +184,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
                     } else {
                         // Resume song
                         if (mp != null) {
-                            if(!resumed)playSong(songnumber);
                             if(!SongProgressBarTabPlayer.isEnabled())SongProgressBarTabPlayer.setEnabled(true);
-                            mp.start();
+                            playSong(songnumber);
                             // Changing button image to pause button
                             playTabPlayer.setImageResource(R.drawable.ic_pause_black_24dp);
                         }
@@ -392,7 +390,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
             case FragNavController.TAB3:
                 return new UploadFragment();
             case FragNavController.TAB4:
-                return new SettingsFragment();
+                return new SocialFragment();
             case FragNavController.TAB5:
                 return new ProfileFragment();
 
@@ -427,18 +425,11 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     public boolean onOptionsItemSelected(MenuItem item) {
 
         switch (item.getItemId()) {
-
-
             case android.R.id.home:
-
-
                 onBackPressed();
                 return true;
         }
-
-
         return super.onOptionsItemSelected(item);
-
     }
 
     @Override

@@ -1,41 +1,53 @@
 package com.csd.MeWaT.activities;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ImageButton;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.activities.PlayListActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class PlayListActivity extends ListActivity {
-    // Songs list
-    public ArrayList<HashMap<String, String>> songsList = new ArrayList<HashMap<String, String>>();
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
+public class PlayListActivity extends AppCompatActivity {
+    // Songs list
+    ImageButton b2p;
+    ListView lv;
+
+    public ArrayList<Song> songsList = new ArrayList<>();
+    private ArrayList<HashMap<String, String>> songsListData = new ArrayList<>();
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_song_list);
 
-        ArrayList<HashMap<String, String>> songsListData = new ArrayList<HashMap<String, String>>();
+        songsList = MainActivity.songsList;
+        b2p =  (ImageButton) findViewById(R.id.back2Player);
 
-        SongsManager plm = new SongsManager();
-        // get all songs from sdcard
-        this.songsList = plm.getPlayList();
+        lv =  (ListView) findViewById(R.id.list);
 
         // looping through playlist
         for (int i = 0; i < songsList.size(); i++) {
             // creating new HashMap
-            HashMap<String, String> song = songsList.get(i);
+            HashMap<String, String> song = new HashMap<String, String>();
+            song.put("songTitle", songsList.get(i).getTitle());
+            song.put("songPath", songsList.get(i).getUrl());
 
             // adding HashList to ArrayList
             songsListData.add(song);
@@ -46,10 +58,7 @@ public class PlayListActivity extends ListActivity {
                 R.layout.list_row, new String[] { "songTitle" }, new int[] {
                 R.id.songTitle });
 
-        setListAdapter(adapter);
-
-        // selecting single ListView item
-        ListView lv = getListView();
+        lv.setAdapter(adapter);
         // listening to single listitem click
 
         lv.setOnItemClickListener(new OnItemClickListener() {
@@ -64,8 +73,16 @@ public class PlayListActivity extends ListActivity {
                 Intent in = new Intent();
                 // Sending songIndex to PlayerActivity
                 in.putExtra("songIndex", songIndex);
-                setResult(100, in);
+                setResult(Activity.RESULT_OK,in);
                 // Closing PlayListView
+                finish();
+            }
+        });
+
+        b2p.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                setResult(Activity.RESULT_CANCELED);
                 finish();
             }
         });

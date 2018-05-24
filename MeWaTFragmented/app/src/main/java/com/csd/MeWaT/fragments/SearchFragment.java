@@ -84,8 +84,8 @@ public class SearchFragment extends BaseFragment {
         search_button.setImageResource(R.drawable.ic_search_black_24dp);
         utils = new Utils();
         adapter = new SimpleAdapter(view.getContext(),listAdapter,R.layout.search_row,
-                new String[]{"title","album","artist"},
-                new int[]{R.id.songTitle,R.id.albumTitle,R.id.artistTitle});
+                new String[]{"title","artist","album"},
+                new int[]{R.id.songTitle,R.id.artistTitle,R.id.albumTitle});
         search_listView.setAdapter(adapter);
 
         return view;
@@ -167,6 +167,7 @@ public class SearchFragment extends BaseFragment {
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
                 client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
+
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
@@ -214,7 +215,7 @@ public class SearchFragment extends BaseFragment {
                                 jsObj.getString("nombreArtista"),
                                 jsObj.getString("nombreAlbum"),
                                 jsObj.getString("genero"),
-                                jsObj.getString("ruta")
+                                jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net")
                                 )
                         );
                     }
@@ -235,14 +236,14 @@ public class SearchFragment extends BaseFragment {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            HashMap<String,String> temp = new HashMap<String,String>();
 
             if (success) {
                 listAdapter.clear();
                 for(Song s: resultList){
+                    HashMap<String,String> temp = new HashMap<String,String>();
                     temp.put("title",s.getTitle());
-                    temp.put("album",s.getAlbum());
                     temp.put("artist",s.getArtist());
+                    temp.put("album",s.getAlbum());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();

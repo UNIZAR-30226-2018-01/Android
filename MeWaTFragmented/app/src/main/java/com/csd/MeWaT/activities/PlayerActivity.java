@@ -1,5 +1,6 @@
 package com.csd.MeWaT.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.utils.Library;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
@@ -236,7 +238,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void onClick(View arg0) {
                 Intent i = new Intent(getApplicationContext(), PlayListActivity.class);
-                startActivityForResult(i, 100);
+                startActivityForResult(i, Library.PLAYLIST);
             }
         });
 
@@ -255,11 +257,15 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     @Override
     public void onActivityResult(int requestCode,
                                     int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == 100){
-            currentSongIndex = data.getExtras().getInt("songIndex");
-            // play selected song
-            playSong(currentSongIndex);
+
+        if(requestCode == Library.PLAYLIST){
+            if(resultCode == Activity.RESULT_OK) {
+                currentSongIndex = data.getExtras().getInt("songIndex");
+                // play selected song
+                playSong(currentSongIndex);
+            }
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
         }
 
     }
@@ -272,6 +278,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         // Play song
         try {
             MainActivity.resumed=true;
+            songProgressBar.setEnabled(true);
             mp.reset();
             mp.setDataSource(songsList.get(songIndex).getUrl());
             mp.prepare();

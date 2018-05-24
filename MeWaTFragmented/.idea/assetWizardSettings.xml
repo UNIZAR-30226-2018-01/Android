@@ -37,8 +37,6 @@
                                       <entry key="backgroundAssetType" value="COLOR" />
                                       <entry key="backgroundColor" value="56a67d" />
                                       <entry key="foregroundImage" value="C:\Users\Carlos\Documents\Universidad\3\PS\Android\MEWAT\app\src\main\res\mipmap-mdpi\logoapp.png" />
-                                      <entry key="generateLegacyIcon" value="false" />
-                                      <entry key="generateWebIcon" value="false" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -67,9 +65,8 @@
                                     <map>
                                       <entry key="assetType" value="IMAGE" />
                                       <entry key="backgroundColor" value="ffd329" />
-                                      <entry key="cropped" value="true" />
                                       <entry key="iconShape" value="CIRCLE" />
-                                      <entry key="imageAsset" value="C:\Users\Carlos\Documents\Universidad\3\PS\Android\MEWAT\app\src\main\res\mipmap-mdpi\logoapp.png" />
+                                      <entry key="imageAsset" value="C:\Users\Carlos\Documents\Universidad\3\PS\Android\MeWaTFragmented\app\src\main\res\drawable\ic_launcher.png" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -105,7 +102,7 @@
                                 <PersistentState>
                                   <option name="values">
                                     <map>
-                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/navigation/ic_expand_more_black_24dp.xml" />
+                                      <entry key="url" value="jar:file:/C:/Program%20Files/Android/Android%20Studio/plugins/android/lib/android.jar!/images/material_design_icons/content/ic_add_black_24dp.xml" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -115,7 +112,7 @@
                         </option>
                         <option name="values">
                           <map>
-                            <entry key="outputName" value="ic_expand_more_black_24dp" />
+                            <entry key="outputName" value="ic_add_black_24dp" />
                             <entry key="sourceFile" value="C:\Users\Familia" />
                           </map>
                         </option>

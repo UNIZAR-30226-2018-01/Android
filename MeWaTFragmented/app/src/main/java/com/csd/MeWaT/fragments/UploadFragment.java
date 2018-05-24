@@ -1,6 +1,6 @@
 package com.csd.MeWaT.fragments;
 
-import android.app.Fragment;
+import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,63 +8,69 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.utils.Song;
+import com.csd.MeWaT.utils.Library;
+import com.csd.MeWaT.utils.RealPathUtil;
+import com.csd.MeWaT.utils.Utils;
 
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.File;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.xml.transform.URIResolver;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static android.app.Activity.RESULT_OK;
+import static android.os.Build.VERSION_CODES.HONEYCOMB;
+import static com.csd.MeWaT.utils.RealPathUtil.getRealPathFromURI_API11to18;
 
 
 public class UploadFragment extends BaseFragment{
 
 
-    public static final int PICK_MUSIC = 2;
+
     ArrayList<String> LS2U = new ArrayList<>();
     ArrayList<String> names = new ArrayList<>();
     ArrayAdapter<String> adapter;
 
-    @BindView(R.id.btn_select_music)
-    Button selmusicbutton;
 
     @BindView(R.id.upload_list)
     ListView listView;
@@ -85,8 +91,9 @@ public class UploadFragment extends BaseFragment{
         // Inflate the layout for this fragment
         final View view = inflater.inflate(R.layout.fragment_upload, container, false);
         ButterKnife.bind(this, view);
+        setHasOptionsMenu(true);
 
-        adapter = new ArrayAdapter<>(view.getContext(),R.layout.listupload_row,LS2U);
+        adapter = new ArrayAdapter<>(view.getContext(),R.layout.listupload_row,names);
         listView.setAdapter(adapter);
 
 
@@ -98,51 +105,58 @@ public class UploadFragment extends BaseFragment{
             }
         });
 
-        selmusicbutton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                getIntent.setType("audio/*");
-
-                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Audio.Media.EXTERNAL_CONTENT_URI);
-                pickIntent.setType("audio/*");
-
-                Intent chooserIntent = Intent.createChooser(getIntent, "Select Song");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-
-                getActivity().startActivityForResult(chooserIntent, PICK_MUSIC);
-            }
-        });
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for(String s : LS2U) {
-                    MusicList2Upload m2u = new MusicList2Upload(s);
+                for(int i = 0; i< names.size();i++) {
+                    MusicList2Upload m2u = new MusicList2Upload(names.get(i),LS2U.get(i));
                     m2u.execute((Void) null);
                 }
             }
         });
-
-
-
-
         return view;
     }
 
 
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actionbar_upload, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.addSongs:
+                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
+                getIntent.setType("audio/*");
+
+
+                Intent chooserIntent = Intent.createChooser(getIntent, "Select Song" );
+                startActivityForResult(chooserIntent, Library.PICK_MUSIC);
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+
+    }
+
     public void onActivityResult(int requestCode, int resultCode, Intent data)
     {
-        super.onActivityResult(requestCode,resultCode,data);
-        if (requestCode == PICK_MUSIC) {
+        if (requestCode == Library.PICK_MUSIC) {
             if (resultCode == RESULT_OK){
 
                 FileDetail file;
                 file = getFileDetailFromUri(getActivity(),data.getData());
-                LS2U.add(file.fileName);
+                String uri = Utils.getPath(getActivity(),data.getData());
+                names.add(file.fileName);
+                LS2U.add(uri);
                 adapter.notifyDataSetChanged();
             }
 
         }
+        else super.onActivityResult(requestCode,resultCode,data);
     }
     /**
      * Used to get file detail from uri.
@@ -201,18 +215,23 @@ public class UploadFragment extends BaseFragment{
         }
     }
 
+
+
+
     public class MusicList2Upload extends AsyncTask<Void, Void, Boolean> {
 
-        private final String query;
+        private final String name,uri;
 
-        MusicList2Upload(String query){this.query = query;
+        MusicList2Upload(String name, String uri){
+            this.name = name;
+            this.uri = uri;
         }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             // TODO: attempt authentication against a network service.
             URL url;
-            HttpURLConnection client = null;
+            HttpsURLConnection client = null;
             InputStreamReader inputStream;
             DataOutputStream dos;
             String lineEnd = "\r\n";
@@ -220,24 +239,32 @@ public class UploadFragment extends BaseFragment{
             String boundary = "*****";
             int bytesRead, bytesAvailable, bufferSize;
             byte[] buffer;
-            int maxBufferSize = 1 * 1024 * 1024;
+            int maxBufferSize = 8 * 1024 * 1024;
 
             try {
-                url = new URL("https://mewat1718.ddns.net:80/ps/BuscarCancionTitulo");
+                url = new URL("https://mewat1718.ddns.net/ps/SubirCanciones");
 
-                FileInputStream fileInputStream = new FileInputStream(new File(query));
-                client = (HttpURLConnection) url.openConnection();
+                File file = new File(uri);
+
+                FileInputStream fileInputStream = new FileInputStream(file);
+
+                client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
-                client.setRequestProperty("User-agent", System.getProperty("http.agent"));
-                client.setDoOutput(true);
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setDoInput(true); // Allow Inputs
+                client.setDoOutput(true); // Allow Outputs
+                client.setUseCaches(false); // Don't use a Cached Copy
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setRequestProperty("Connection", "Keep-Alive");
+                client.setRequestProperty("ENCTYPE", "multipart/form-data");
                 client.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
 
                 dos = new DataOutputStream(client.getOutputStream());
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + query + "\"" + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + name + "\"" + lineEnd);
                 dos.writeBytes(lineEnd);
                 // create a buffer of maximum size
                 bytesAvailable = fileInputStream.available();
@@ -270,11 +297,13 @@ public class UploadFragment extends BaseFragment{
             } catch (SocketTimeoutException e) {
                 return false;
             }catch (IOException e) {
+                System.out.println(e);
                 return false;
             }
             try {
+
                 inputStream = new InputStreamReader(client.getInputStream());
-                client.disconnect();
+
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -288,6 +317,7 @@ public class UploadFragment extends BaseFragment{
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
 
+                client.disconnect();
                 if (!result.has("error")){
 
                 }else{
@@ -310,7 +340,12 @@ public class UploadFragment extends BaseFragment{
 
             if (success) {
                 LS2U.clear();
+                names.clear();
                 adapter.notifyDataSetChanged();
+            }
+            else{
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
             }
         }
 
