@@ -12,10 +12,12 @@ import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
@@ -57,6 +59,8 @@ public class SocialFragment extends BaseFragment{
     /**********************************************************************
      * Code for edit profile
      **********************************************************************/
+    @BindView(R.id.alerta)
+    TextView notificacion;
     @BindView(R.id.social_listView)
     ListView social_listView;
 
@@ -77,16 +81,39 @@ public class SocialFragment extends BaseFragment{
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+        final View view = inflater.inflate(R.layout.fragment_social, container, false);
+        ButterKnife.bind(this, view);
+
+        //search_button.setImageResource(R.drawable.ic_search_black_24dp);
+        utils = new Utils();
+        adapter = new SimpleAdapter(view.getContext(),listAdapter,R.layout.social_row,
+                new String[]{"title","artist","emisor"},
+                new int[]{R.id.songName,R.id.artistName,R.id.emisorName});
+        social_listView.setAdapter(adapter);
+        return view;
+    }
+
+    @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        SocialTask socialTask = new SocialTask();
+        socialTask.execute();
+
+        social_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                //MainActivity.songsList = resultList;
+                //MainActivity.songnumber = (int) l;
+            }
+        });
     }
 
     public class SocialTask extends AsyncTask<Void, Void, Boolean> {
 
-        private final String query;
+        SocialTask() {
 
-        SocialTask(String txt) {
-            query = txt;
         }
 
         @Override
@@ -95,8 +122,6 @@ public class SocialFragment extends BaseFragment{
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
-
-
             resultList = new ArrayList<>();
             try {
 
@@ -111,13 +136,13 @@ public class SocialFragment extends BaseFragment{
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder();             //No Añade parametros,puesto que no se pide
-                String query = builder.build().getEncodedQuery();
+                //String query = builder.build().getEncodedQuery();
 
                 OutputStream os = client.getOutputStream();
                 BufferedWriter writer = new BufferedWriter(
                         new OutputStreamWriter(os, "UTF-8"));
-                writer.write(query);
-                writer.flush();
+                //writer.write(query);
+                //writer.flush();
                 writer.close();
                 int responseCode = client.getResponseCode();
                 System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
@@ -149,13 +174,13 @@ public class SocialFragment extends BaseFragment{
                 if (!result.has("error")){
 
                     JSONArray resultArray = result.getJSONArray("canciones");
+
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
                         resultList.add(new Song(jsObj.getString("tituloCancion"),
                                         jsObj.getString("nombreArtista"),
-                                        jsObj.getString("nombreAlbum"),
-                                        jsObj.getString("genero")
-                                        ,jsObj.getString("url")
+                                        jsObj.getString("uploader"),
+                                        jsObj.getString("url")
                                 )
                         );
                     }
@@ -182,8 +207,8 @@ public class SocialFragment extends BaseFragment{
                 listAdapter.clear();
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
-                    temp.put("album",s.getAlbum());
                     temp.put("artist",s.getArtista());
+                    temp.put("emisor",s.getAlbum());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();
