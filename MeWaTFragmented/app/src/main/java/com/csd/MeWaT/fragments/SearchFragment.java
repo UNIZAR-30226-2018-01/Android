@@ -13,6 +13,7 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.SimpleAdapter;
@@ -22,6 +23,7 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Album;
+import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 
@@ -52,16 +54,35 @@ public class SearchFragment extends BaseFragment{
 
     @BindView(R.id.search_text)
     EditText search_text;
+
     @BindView(R.id.search_button)
     ImageButton search_button;
+
     @BindView(R.id.songsearch_listview)
     ListView song_listView;
+
     @BindView(R.id.albumsearch_listview)
     GridView album_listView;
+
     @BindView(R.id.listsearch_listview)
     ListView list_listView;
+
+    @BindView(R.id.usersearch_listview)
+    GridView user_listView;
+
+
     @BindView(R.id.ScrollSearchView)
     ScrollView ScrollSearchView;
+
+    @BindView(R.id.ScrollSearchViewSongs)
+    LinearLayout ScrollSearchViewSongs;
+    @BindView(R.id.ScrollSearchViewAlbums)
+    LinearLayout ScrollSearchViewAlbums;
+    @BindView(R.id.ScrollSearchViewListas)
+    LinearLayout ScrollSearchViewListas;
+    @BindView(R.id.ScrollSearchViewUsers)
+    LinearLayout ScrollSearchViewUsers;
+
     @BindView(R.id.moreSongs)
     TextView moreSongs;
 
@@ -73,9 +94,13 @@ public class SearchFragment extends BaseFragment{
     private ArrayList<HashMap<String,String>> listAdapterAlbums =new ArrayList<HashMap<String,String>>();
     SimpleAdapter adapterAlbum;
 
-    private ArrayList<Album> listaResultList;
+    private ArrayList<Lista> listaResultList;
     private ArrayList<HashMap<String,String>> listAdapterLista =new ArrayList<HashMap<String,String>>();
     SimpleAdapter adapterLista;
+
+    private ArrayList<String> userResultList;
+    private ArrayList<HashMap<String,String>> listAdapterUser =new ArrayList<HashMap<String,String>>();
+    SimpleAdapter adapterUser;
 
     public SearchFragment(){
         //Empty public constructor
@@ -107,9 +132,14 @@ public class SearchFragment extends BaseFragment{
         album_listView.setAdapter(adapterAlbum);
 
         adapterLista= new SimpleAdapter(view.getContext(), listAdapterLista,R.layout.list_row_lista,
-                new String[]{"nombre","artist"},
+                new String[]{"nombre","userOwn"},
                 new int[]{R.id.NameListRow,R.id.OwnerListRow});
         list_listView.setAdapter(adapterLista);
+
+        adapterUser= new SimpleAdapter(view.getContext(), listAdapterUser,R.layout.list_row_user,
+                new String[]{"user"},
+                new int[]{R.id.UserName});
+        user_listView.setAdapter(adapterUser);
 
         return view;
     }
@@ -132,6 +162,10 @@ public class SearchFragment extends BaseFragment{
                     searchTaskBySong.execute();
                     SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(query.trim());
                     searchTaskByAlbum.execute();
+                    SearchTaskByList searchTaskByList = new SearchTaskByList(query.trim());
+                    searchTaskByList.execute();
+                    SearchTaskByUser searchTaskByUser = new SearchTaskByUser(query.trim());
+                    searchTaskByUser.execute();
                     ScrollSearchView.setVisibility(View.VISIBLE);
 
                 }
@@ -309,6 +343,7 @@ public class SearchFragment extends BaseFragment{
                     temp.put("artist",songResultList.get(i).getArtist());
                     listAdapterSongs.add(temp);
                 }
+                if (listAdapterSongs.size()>0)ScrollSearchViewSongs.setVisibility(View.VISIBLE);
                 Utils.setListViewHeightBasedOnChildren(song_listView);
                 adapterSong.notifyDataSetChanged();
             } else {
@@ -432,6 +467,7 @@ public class SearchFragment extends BaseFragment{
                     temp.put("url",albumResultList.get(i).getUrlImg());
                     listAdapterAlbums.add(temp);
                 }
+                if (listAdapterAlbums.size()>0)ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
                 adapterAlbum.notifyDataSetChanged();
             } else {
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
@@ -447,7 +483,7 @@ public class SearchFragment extends BaseFragment{
     }
 
     /**
-     * Represents an asynchronous album search task
+     * Represents an asynchronous list search task
      */
     public class SearchTaskByList extends AsyncTask<Void, Void, Boolean> {
 
@@ -465,7 +501,7 @@ public class SearchFragment extends BaseFragment{
             InputStreamReader inputStream;
 
 
-            albumResultList = new ArrayList<>();
+            listaResultList= new ArrayList<>();
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarLista");
 
@@ -519,7 +555,7 @@ public class SearchFragment extends BaseFragment{
                     JSONArray resultArray = result.getJSONArray("busquedaListas");
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
-                        listaResultList.add(new Album(jsObj.getString("nombre"),
+                        listaResultList.add(new Lista(jsObj.getString("nombre"),
                                         jsObj.getString("nombreUsuario")
                                 )
                         );
@@ -547,11 +583,11 @@ public class SearchFragment extends BaseFragment{
                 for(int i = 0; i<4 && i<listaResultList.size();i++){
                     HashMap<String,String> temp = new HashMap<String,String>();
                     temp.put("nombre",listaResultList.get(i).getName());
-                    temp.put("artist",listaResultList.get(i).getArtist());
-                    temp.put("url",listaResultList.get(i).getUrlImg());
+                    temp.put("userOwn",listaResultList.get(i).getUserOwner());
                     listAdapterLista.add(temp);
                 }
                 adapterLista.notifyDataSetChanged();
+                if (listAdapterLista.size()>0)ScrollSearchViewListas.setVisibility(View.VISIBLE);
             } else {
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
@@ -565,6 +601,120 @@ public class SearchFragment extends BaseFragment{
         }
     }
 
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class SearchTaskByUser extends AsyncTask<Void, Void, Boolean> {
+
+        private final String query;
+
+        SearchTaskByUser(String txt) {
+            query = txt;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            userResultList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/BuscarUsuarios");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("usuario", query);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("usuarios");
+                    for(int i = 0; i<resultArray.length();i++){
+                        userResultList.add(resultArray.getString(i)
+                        );
+                    }
+
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                listAdapterUser.clear();
+                for(int i = 0; i<4 && i<userResultList.size();i++){
+                    HashMap<String,String> temp = new HashMap<String,String>();
+                    temp.put("user",userResultList.get(i));
+                    listAdapterUser.add(temp);
+                }
+                adapterUser.notifyDataSetChanged();
+                if (listAdapterUser.size()>0)ScrollSearchViewUsers.setVisibility(View.VISIBLE);
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
 
 
 
