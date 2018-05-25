@@ -1,10 +1,8 @@
 package com.csd.MeWaT.activities;
 
 import android.app.Activity;
-import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
@@ -16,14 +14,9 @@ import android.widget.SimpleAdapter;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.utils.Song;
-import com.csd.MeWaT.utils.SongsManager;
-import com.csd.MeWaT.activities.PlayListActivity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class PlayListActivity extends AppCompatActivity {
     // Songs list
@@ -47,7 +40,7 @@ public class PlayListActivity extends AppCompatActivity {
             // creating new HashMap
             HashMap<String, String> song = new HashMap<String, String>();
             song.put("songTitle", songsList.get(i).getTitle());
-            song.put("songPath", songsList.get(i).getUrl());
+            song.put("songArtist", songsList.get(i).getArtist());
 
             // adding HashList to ArrayList
             songsListData.add(song);
@@ -55,8 +48,8 @@ public class PlayListActivity extends AppCompatActivity {
 
         // Adding menuItems to ListView
         ListAdapter adapter = new SimpleAdapter(this, songsListData,
-                R.layout.list_row, new String[] { "songTitle" }, new int[] {
-                R.id.songTitle });
+                R.layout.list_row_song, new String[] { "songTitle","songArtist" }, new int[] {
+                R.id.songTitle, R.id.songArtist });
 
         lv.setAdapter(adapter);
         // listening to single listitem click

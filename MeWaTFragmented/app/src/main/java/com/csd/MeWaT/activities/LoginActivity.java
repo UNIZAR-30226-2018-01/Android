@@ -224,23 +224,6 @@ public class LoginActivity extends AppCompatActivity {
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-    public static Boolean connectionIsHttps (String urlString){
-        if (urlString.regionMatches(0, "https", 0, 5)){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    public static String getHostNameFromUrl (String urlString){
-        if (connectionIsHttps(urlString)){
-            return urlString.substring(8,urlString.indexOf("/", 8));
-        }
-        else{
-            return urlString.substring(7,urlString.indexOf("/", 7));
-        }
-    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate

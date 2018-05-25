@@ -29,7 +29,7 @@
             android:layout_marginStart="10dp"
             android:imeOptions="actionSend"
             android:inputType="textCapWords|textAutoCorrect"
-            android:hint="@string/buscar_cancion"
+            android:hint="@string/buscar"
             android:gravity="left"
             android:textSize="18sp" />
 
@@ -43,13 +43,106 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
-    <ListView
-        android:id="@+id/search_listview"
-        android:layout_width="match_parent"
+    <ScrollView
+        android:id="@+id/ScrollSearchView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:divider="#242424"
-        android:dividerHeight="1dp">
+        android:visibility="visible">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </ListView>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Canciones"/>
+
+            <ListView
+                android:id="@+id/songsearch_listview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="@color/grey"
+                android:dividerHeight="1dp">
+
+            </ListView>
+
+            <TextView
+                android:id="@+id/moreSongs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
+                android:text="Ver mas..."
+                android:layout_marginBottom="15dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Albums"/>
+
+            <GridView
+                android:id="@+id/albumsearch_listview"
+                android:isScrollContainer="false"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="50dp"
+                android:layout_marginStart="50dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginEnd="50dp"
+                android:verticalSpacing="80dp"
+                android:horizontalSpacing="10dp"
+                android:numColumns="2"
+                android:layout_height="wrap_content" >
+
+            </GridView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Listas"/>
+
+            <ListView
+                android:isScrollContainer="false"
+                android:id="@+id/listsearch_listview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:divider="#242424"
+                android:dividerHeight="1dp">
+
+            </ListView>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Usuarios"/>
+
+            <GridView
+                android:id="@+id/usersearch_listview"
+                android:isScrollContainer="false"
+                android:layout_width="match_parent"
+                android:layout_marginLeft="50dp"
+                android:layout_marginStart="50dp"
+                android:layout_marginRight="50dp"
+                android:layout_marginEnd="50dp"
+                android:verticalSpacing="80dp"
+                android:horizontalSpacing="10dp"
+                android:numColumns="2"
+                android:layout_height="wrap_content" >
+
+            </GridView>
+
+
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+
+
 
 </LinearLayout>

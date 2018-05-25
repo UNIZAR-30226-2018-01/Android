@@ -2,6 +2,8 @@ package com.csd.MeWaT.utils;
 
 import android.support.annotation.Nullable;
 
+import java.io.Serializable;
+
 /**
  * Created by Carlos on 19/03/2018.
  */

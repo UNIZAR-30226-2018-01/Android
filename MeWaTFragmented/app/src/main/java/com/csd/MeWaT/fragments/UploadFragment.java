@@ -1,6 +1,5 @@
 package com.csd.MeWaT.fragments;
 
-import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,8 +7,6 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.DocumentsContract;
-import android.provider.MediaStore;
 import android.provider.OpenableColumns;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -27,7 +24,6 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Library;
-import com.csd.MeWaT.utils.RealPathUtil;
 import com.csd.MeWaT.utils.Utils;
 
 
@@ -41,26 +37,19 @@ import java.io.File;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.xml.transform.URIResolver;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static android.app.Activity.RESULT_OK;
-import static android.os.Build.VERSION_CODES.HONEYCOMB;
-import static com.csd.MeWaT.utils.RealPathUtil.getRealPathFromURI_API11to18;
 
 
 public class UploadFragment extends BaseFragment{
@@ -93,7 +82,7 @@ public class UploadFragment extends BaseFragment{
         ButterKnife.bind(this, view);
         setHasOptionsMenu(true);
 
-        adapter = new ArrayAdapter<>(view.getContext(),R.layout.listupload_row,names);
+        adapter = new ArrayAdapter<>(view.getContext(),R.layout.list_row_upload,names);
         listView.setAdapter(adapter);
 
 

@@ -505,4 +505,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         }
     }
 
+    public void setAsFavorite(View v){
+    }
+
 }
