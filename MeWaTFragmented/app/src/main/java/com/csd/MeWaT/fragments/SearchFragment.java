@@ -23,6 +23,9 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Album;
+import com.csd.MeWaT.utils.CustomAdapterAlbum;
+import com.csd.MeWaT.utils.CustomAdapterSong;
+import com.csd.MeWaT.utils.CustomAdapterUsers;
 import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
@@ -86,13 +89,13 @@ public class SearchFragment extends BaseFragment{
     @BindView(R.id.moreSongs)
     TextView moreSongs;
 
-    private ArrayList<Song> songResultList;
+    private ArrayList<Song> songResultList = new ArrayList<>();
     private ArrayList<HashMap<String,String>> listAdapterSongs =new ArrayList<HashMap<String,String>>();
-    SimpleAdapter adapterSong;
+    CustomAdapterSong adapterSong;
 
     private ArrayList<Album> albumResultList;
     private ArrayList<HashMap<String,String>> listAdapterAlbums =new ArrayList<HashMap<String,String>>();
-    SimpleAdapter adapterAlbum;
+    CustomAdapterAlbum adapterAlbum;
 
     private ArrayList<Lista> listaResultList;
     private ArrayList<HashMap<String,String>> listAdapterLista =new ArrayList<HashMap<String,String>>();
@@ -100,7 +103,10 @@ public class SearchFragment extends BaseFragment{
 
     private ArrayList<String> userResultList;
     private ArrayList<HashMap<String,String>> listAdapterUser =new ArrayList<HashMap<String,String>>();
-    SimpleAdapter adapterUser;
+    CustomAdapterUsers adapterUser;
+
+    private Integer numFailed;
+
 
     public SearchFragment(){
         //Empty public constructor
@@ -121,12 +127,12 @@ public class SearchFragment extends BaseFragment{
         ScrollSearchView.setVisibility(View.GONE);
         search_button.setImageResource(R.drawable.ic_search_black_24dp);
 
-        adapterSong = new SimpleAdapter(view.getContext(), listAdapterSongs,R.layout.list_row_song,
+        adapterSong = new CustomAdapterSong(view.getContext(), listAdapterSongs,R.layout.list_row_song,
                 new String[]{"title","artist"},
                 new int[]{R.id.songTitle,R.id.songArtist});
         song_listView.setAdapter(adapterSong);
 
-        adapterAlbum = new SimpleAdapter(view.getContext(), listAdapterAlbums,R.layout.list_row_album,
+        adapterAlbum = new CustomAdapterAlbum(view.getContext(), listAdapterAlbums,R.layout.list_row_album,
                 new String[]{"nombre","artist"},
                 new int[]{R.id.AlbumTitlerow,R.id.AlbumArtistrow});
         album_listView.setAdapter(adapterAlbum);
@@ -136,7 +142,7 @@ public class SearchFragment extends BaseFragment{
                 new int[]{R.id.NameListRow,R.id.OwnerListRow});
         list_listView.setAdapter(adapterLista);
 
-        adapterUser= new SimpleAdapter(view.getContext(), listAdapterUser,R.layout.list_row_user,
+        adapterUser= new CustomAdapterUsers(view.getContext(), listAdapterUser,R.layout.list_row_user,
                 new String[]{"user"},
                 new int[]{R.id.UserName});
         user_listView.setAdapter(adapterUser);
@@ -155,9 +161,8 @@ public class SearchFragment extends BaseFragment{
                 String query = search_text.getText().toString();
                 // if the query isnt empty, then search fro anything in the DB
                 if (!query.trim().isEmpty()){
-
                     ScrollSearchView.setVisibility(View.GONE);
-
+                    numFailed =0;
                     SearchTaskBySong searchTaskBySong = new SearchTaskBySong(query.trim());
                     searchTaskBySong.execute();
                     SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(query.trim());
@@ -310,14 +315,15 @@ public class SearchFragment extends BaseFragment{
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
                         songResultList.add(new Song(jsObj.getString("tituloCancion"),
-                                jsObj.getString("nombreArtista"),
                                 jsObj.getString("nombreAlbum"),
+                                jsObj.getString("nombreArtista"),
                                 jsObj.getString("genero"),
-                                jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net")
+                                jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
+                                jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
                                 )
                         );
                     }
-
+                    adapterSong.setArrayList(songResultList);
                 }else{
                     return false;
                 }
@@ -344,9 +350,13 @@ public class SearchFragment extends BaseFragment{
                     listAdapterSongs.add(temp);
                 }
                 if (listAdapterSongs.size()>0)ScrollSearchViewSongs.setVisibility(View.VISIBLE);
+                else ScrollSearchViewSongs.setVisibility(View.GONE);
                 Utils.setListViewHeightBasedOnChildren(song_listView);
                 adapterSong.notifyDataSetChanged();
+
+
             } else {
+                if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
 
@@ -440,7 +450,7 @@ public class SearchFragment extends BaseFragment{
                                 )
                         );
                     }
-
+                    adapterAlbum.setArrayList(albumResultList);
                 }else{
                     return false;
                 }
@@ -467,9 +477,12 @@ public class SearchFragment extends BaseFragment{
                     temp.put("url",albumResultList.get(i).getUrlImg());
                     listAdapterAlbums.add(temp);
                 }
+                Utils.setListViewHeightBasedOnChildren(album_listView);
                 if (listAdapterAlbums.size()>0)ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
+                else ScrollSearchViewAlbums.setVisibility(View.GONE);
                 adapterAlbum.notifyDataSetChanged();
             } else {
+                if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
 
@@ -587,8 +600,12 @@ public class SearchFragment extends BaseFragment{
                     listAdapterLista.add(temp);
                 }
                 adapterLista.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildren(list_listView);
                 if (listAdapterLista.size()>0)ScrollSearchViewListas.setVisibility(View.VISIBLE);
+                else ScrollSearchViewListas.setVisibility(View.GONE);
+
             } else {
+                if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
 
@@ -702,8 +719,12 @@ public class SearchFragment extends BaseFragment{
                     listAdapterUser.add(temp);
                 }
                 adapterUser.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildren(user_listView);
                 if (listAdapterUser.size()>0)ScrollSearchViewUsers.setVisibility(View.VISIBLE);
+                else ScrollSearchViewUsers.setVisibility(View.GONE);
+
             } else {
+                if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
 

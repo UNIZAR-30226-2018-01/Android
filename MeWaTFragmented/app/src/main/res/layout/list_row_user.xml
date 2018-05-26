@@ -6,7 +6,7 @@
     android:layout_margin="10dp">
 
     <ImageView
-        android:id="@+id/ImgAlbum"
+        android:id="@+id/ImgUser"
         android:layout_gravity="center"
         android:layout_width="80dp"
         android:layout_height="80dp"

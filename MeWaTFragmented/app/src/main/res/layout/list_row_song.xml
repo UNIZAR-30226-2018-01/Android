@@ -29,10 +29,9 @@
         android:layout_width="0dp"
         android:text="Artist" />
     <ImageButton
-        android:id="@+id/more_button"
+        android:id="@+id/likeButton"
         android:layout_width="30dp"
         android:layout_height="30dp"
-        android:onClick="setAsFavorite"
         android:layout_gravity="center"
         android:layout_margin="5dp"
         android:background="@color/transparent"

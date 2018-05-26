@@ -108,6 +108,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 mp.start();
+                SongProgressBarTabPlayer.setProgress(0);
+                SongProgressBarTabPlayer.setMax(100);
                 // Updating progress bar
                 updateProgressBar();
             }
@@ -226,7 +228,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
             resumed=true;
             mp.reset();
             mp.setDataSource(songsList.get(songIndex).getUrl());
-            mp.prepare();
+            mp.prepareAsync();
             // Displaying Song title
             String songTitle = songsList.get(songIndex).getTitle();
             songTitleTabPlayer.setText(songTitle);

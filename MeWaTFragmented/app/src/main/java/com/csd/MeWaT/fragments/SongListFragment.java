@@ -1,18 +1,15 @@
 package com.csd.MeWaT.fragments;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -21,6 +18,8 @@ import android.widget.Toast;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Album;
+import com.csd.MeWaT.utils.CustomAdapterSong;
+import com.csd.MeWaT.utils.DownloadSongImageTask;
 import com.csd.MeWaT.utils.Song;
 
 import org.json.JSONArray;
@@ -31,11 +30,9 @@ import org.json.JSONTokener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.lang.annotation.Repeatable;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -46,8 +43,6 @@ import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-
-import static com.csd.MeWaT.fragments.BaseFragment.ARGS_INSTANCE;
 
 public class SongListFragment extends BaseFragment {
 
@@ -61,7 +56,7 @@ public class SongListFragment extends BaseFragment {
     LinearLayout lnly;
 
 
-    SimpleAdapter adapter;
+    CustomAdapterSong adapter;
     private static boolean fromalbum = false;
 
     private Album album = null;
@@ -109,6 +104,13 @@ public class SongListFragment extends BaseFragment {
             songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
         }
 
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity.songsList=songsList;
+                MainActivity.songnumber=(int) l;
+            }
+        });
 
         return view;
     }
@@ -119,7 +121,7 @@ public class SongListFragment extends BaseFragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Adding menuItems to ListView
-        adapter = new SimpleAdapter(view.getContext(), songsListData,
+        adapter = new CustomAdapterSong(view.getContext(), songsListData,
                 R.layout.list_row_song, new String[] { "songTitle","songArtist" }, new int[] {
                 R.id.songTitle, R.id.songArtist });
 
@@ -128,9 +130,7 @@ public class SongListFragment extends BaseFragment {
 
         if(album!=null){
             SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(album.getName());
-
-            //new DownloadImageTask(imageView)
-              //      .execute(album.getUrlImg());
+            new DownloadSongImageTask(imageView).execute(album.getUrlImg());
             textView.setText(album.getName());
             searchTaskByAlbum.execute();
             lnly.setVisibility(View.VISIBLE);
@@ -149,37 +149,6 @@ public class SongListFragment extends BaseFragment {
         }
     }
 
-    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
-        ImageView bmImage;
-
-        public DownloadImageTask(ImageView bmImage) {
-            this.bmImage = bmImage;
-        }
-        HttpsURLConnection client = null;
-        protected Bitmap doInBackground(String... urls) {
-            URL urldisplay;
-            Bitmap mIcon11 = null;
-            try {
-                urldisplay = new URL( urls[0]);
-                client = (HttpsURLConnection) urldisplay.openConnection();
-                client.setRequestProperty("", System.getProperty("https.agent"));
-                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                client.setDoInput(true);
-                client.setDoOutput(true);
-                InputStream in = urldisplay.openStream();
-                mIcon11 = BitmapFactory.decodeStream(in);
-            } catch (Exception e) {
-                Log.e("Error", e.getMessage());
-                e.printStackTrace();
-            }
-            return mIcon11;
-        }
-
-        protected void onPostExecute(Bitmap result) {
-            bmImage.setImageBitmap(result);
-        }
-    }
     /**
      * Represents an asynchronous song search
      */
@@ -254,13 +223,15 @@ public class SongListFragment extends BaseFragment {
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
                         songsList.add(new Song(jsObj.getString("tituloCancion"),
-                                        jsObj.getString("nombreArtista"),
                                         jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
                                         jsObj.getString("genero"),
-                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net")
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
                                 )
                         );
                     }
+                    adapter.setArrayList(songsList);
 
                 }else{
                     return false;

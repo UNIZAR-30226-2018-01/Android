@@ -9,6 +9,7 @@ import java.io.Serializable;
  */
 public class Song {
     private String url;
+    private String urlImg;
     private String title;
     private String album;
     private String artista;
@@ -26,6 +27,7 @@ public class Song {
             if (i==2) this.artista=pars[2];
             if (i==3) this.genero=pars[3];
             if (i==4) this.url=pars[4];
+            if (i==5) this.urlImg= pars[5];
         }
     }
 
@@ -41,13 +43,10 @@ public class Song {
         return artista;
     }
 
-    public String getGender() {
-        return genero;
-    }
 
     public String getTitle() {
         return title;
     }
 
-
+    public String getUrlImg() { return urlImg; }
 }

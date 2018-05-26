@@ -87,7 +87,7 @@
 
             <LinearLayout
                 android:layout_marginTop="10dp"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:id="@+id/ScrollSearchViewAlbums"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -102,12 +102,12 @@
                     android:id="@+id/albumsearch_listview"
                     android:isScrollContainer="false"
                     android:layout_width="match_parent"
-                    android:layout_marginLeft="50dp"
-                    android:layout_marginStart="50dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginStart="70dp"
                     android:layout_marginRight="50dp"
                     android:layout_marginEnd="50dp"
-                    android:verticalSpacing="80dp"
-                    android:horizontalSpacing="10dp"
+                    android:verticalSpacing="10dp"
+                    android:horizontalSpacing="40dp"
                     android:numColumns="2"
                     android:layout_height="wrap_content" >
 
@@ -142,8 +142,8 @@
 
 
             <LinearLayout
-                android:layout_marginTop="10dp"
-                android:visibility="gone"
+                android:layout_marginTop="20dp"
+                android:visibility="visible"
                 android:id="@+id/ScrollSearchViewUsers"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -159,12 +159,12 @@
                     android:id="@+id/usersearch_listview"
                     android:isScrollContainer="false"
                     android:layout_width="match_parent"
-                    android:layout_marginLeft="50dp"
-                    android:layout_marginStart="50dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginStart="70dp"
                     android:layout_marginRight="50dp"
                     android:layout_marginEnd="50dp"
-                    android:verticalSpacing="80dp"
-                    android:horizontalSpacing="10dp"
+                    android:verticalSpacing="10dp"
+                    android:horizontalSpacing="40dp"
                     android:numColumns="2"
                     android:layout_height="wrap_content" >
 

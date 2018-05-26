@@ -1,22 +1,20 @@
 package com.csd.MeWaT.fragments;
 
-import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.utils.DownloadSongImageTask;
+import com.csd.MeWaT.utils.DownloadUserImageTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -46,6 +44,7 @@ public class ProfileFragment extends BaseFragment{
         ButterKnife.bind(this, view);
         setHasOptionsMenu(true);
 
+        new DownloadUserImageTask(user_image).execute("https://mewat1718.ddns.net/ps/images/"+MainActivity.user+".jpg");
         username.setText(MainActivity.user);
 
 

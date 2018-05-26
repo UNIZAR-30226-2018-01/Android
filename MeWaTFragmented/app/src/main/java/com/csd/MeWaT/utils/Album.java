@@ -1,9 +1,11 @@
 package com.csd.MeWaT.utils;
 
+import java.io.Serializable;
+
 /**
  * Created by Carlos on 19/03/2018.
  */
-public class Album {
+public class Album implements Serializable{
     private String name;
     private String artist;
     private String urlImg;
