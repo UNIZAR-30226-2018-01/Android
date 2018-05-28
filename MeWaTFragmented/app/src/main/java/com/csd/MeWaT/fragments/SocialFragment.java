@@ -59,8 +59,6 @@ public class SocialFragment extends BaseFragment{
     /**********************************************************************
      * Code for edit profile
      **********************************************************************/
-    @BindView(R.id.alerta)
-    TextView notificacion;
     @BindView(R.id.social_listView)
     ListView social_listView;
 
