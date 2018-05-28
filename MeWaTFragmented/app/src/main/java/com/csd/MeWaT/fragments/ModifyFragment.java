@@ -61,6 +61,16 @@ public class ModifyFragment extends BaseFragment {
     @BindView(R.id.btton_change_name) Button chgNameBton;
     @BindView(R.id.btton_change_paswd) Button chgPswdBton;
 
+
+    @BindView(R.id.btton_CloseSesion)
+    Button closeSesion;
+
+    @BindView(R.id.passDelete)
+    EditText pasDelete;
+
+    @BindView(R.id.btton_deleteUser)
+    Button deteleUser;
+
     public static final int PICK_IMAGE = 8;
 
 
@@ -251,6 +261,104 @@ public class ModifyFragment extends BaseFragment {
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("viejaPass", oldPwsd)
+                        .appendQueryParameter("nuevaContrasenya", paswd)
+                        .appendQueryParameter("nuevaContrasenyaR", paswdRep);
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (result.has("error")){
+                    return false;
+                }
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success){
+                Toast.makeText(getActivity().getApplicationContext(), "Password has been changed ", Toast.LENGTH_SHORT).show();
+                oldPasword.getText().clear();
+                pasText.getText().clear();
+                pasRepText.getText().clear();
+            }
+            else {
+                Toast.makeText(getActivity().getApplicationContext(), "Sorry, something was wrong!", Toast.LENGTH_SHORT).show();
+                oldPasword.getText().clear();
+                pasText.getText().clear();
+                pasRepText.getText().clear();
+
+            }
+        }
+    }
+
+    public class DeleteTask extends AsyncTask<Void, Void, Boolean>{
+        private final String paswd;
+        private final String paswdRep;
+        private final String oldPwsd;
+
+        DeleteTask(String oldpaswd, String pswd, String pswdRep){
+            paswd = pswd;
+            paswdRep = pswdRep;
+            oldPwsd = oldpaswd;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/EliminarCuenta");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("pass", oldPwsd)
                         .appendQueryParameter("nuevaContrasenya", paswd)
                         .appendQueryParameter("nuevaContrasenyaR", paswdRep);
                 String query = builder.build().getEncodedQuery();
