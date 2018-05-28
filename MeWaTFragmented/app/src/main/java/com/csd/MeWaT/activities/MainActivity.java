@@ -77,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     private Handler mHandler = new Handler();;
 
+    private int pos=0;
     private int[] mTabIconsSelected = {
             R.drawable.tab_home,
             R.drawable.tab_search,
@@ -86,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     public static MediaPlayer mp;
     public static ArrayList<Song> songsList = new ArrayList<>();
-    public static String user, idSesion;
+    public static String user, idSesion,password;
     public static Integer songnumber=0;
     public static Boolean isShuffle = false;
     public static Integer isRepeat = 0;
@@ -94,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
+
+    public static ArrayList<Song> favsSongs = new ArrayList<>();
 
 
 
@@ -121,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
+        password = getIntent().getExtras().getString("password");
 
         setContentView(R.layout.activity_main);
         setSupportActionBar(toolbar);
@@ -319,6 +323,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
 
     private void switchTab(int position) {
+        pos=position;
         mNavController.switchTab(position);
         updateToolbarTitle(position);
     }
@@ -357,10 +362,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     public void onTabTransaction(Fragment fragment, int index) {
         // If we have a backstack, show the back button
         if (getSupportActionBar() != null && mNavController != null) {
-
-
             updateToolbar();
-
         }
     }
 
@@ -415,10 +417,19 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     }
 
+    public ArrayList<String> Hola = new ArrayList<>();
 
     @Override
     public void pushFragment(Fragment fragment) {
         if (mNavController != null) {
+            Hola.add(TABS[pos]);
+            mNavController.pushFragment(fragment);
+        }
+    }
+
+    public void pushFragment(Fragment fragment,String title) {
+        if (mNavController != null) {
+            Hola.add(title);
             mNavController.pushFragment(fragment);
         }
     }
@@ -436,7 +447,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     @Override
     public void onBackPressed() {
-
+        getSupportActionBar().setTitle(Hola.get(Hola.size()-1));
+        Hola.remove(Hola.get(Hola.size()-1));
         if (!mNavController.isRootFragment()) {
             mNavController.popFragment();
         } else {
@@ -456,9 +468,9 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
                 } else {
 
-                    switchTab(4);
+                    switchTab(0);
 
-                    updateTabSelection(4);
+                    updateTabSelection(0);
 
                     fragmentHistory.emptyStack();
                 }

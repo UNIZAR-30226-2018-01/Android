@@ -89,20 +89,20 @@ public class SearchFragment extends BaseFragment{
     @BindView(R.id.moreSongs)
     TextView moreSongs;
 
-    private ArrayList<Song> songResultList = new ArrayList<>();
-    private ArrayList<HashMap<String,String>> listAdapterSongs =new ArrayList<HashMap<String,String>>();
+    private static ArrayList<Song> songResultList = new ArrayList<>();
+    private static ArrayList<HashMap<String,String>> listAdapterSongs =new ArrayList<HashMap<String,String>>();
     CustomAdapterSong adapterSong;
 
-    private ArrayList<Album> albumResultList;
-    private ArrayList<HashMap<String,String>> listAdapterAlbums =new ArrayList<HashMap<String,String>>();
+    private static ArrayList<Album> albumResultList;
+    private static ArrayList<HashMap<String,String>> listAdapterAlbums =new ArrayList<HashMap<String,String>>();
     CustomAdapterAlbum adapterAlbum;
 
-    private ArrayList<Lista> listaResultList;
-    private ArrayList<HashMap<String,String>> listAdapterLista =new ArrayList<HashMap<String,String>>();
+    private static ArrayList<Lista> listaResultList;
+    private static ArrayList<HashMap<String,String>> listAdapterLista =new ArrayList<HashMap<String,String>>();
     SimpleAdapter adapterLista;
 
-    private ArrayList<String> userResultList;
-    private ArrayList<HashMap<String,String>> listAdapterUser =new ArrayList<HashMap<String,String>>();
+    private static ArrayList<String> userResultList;
+    private static ArrayList<HashMap<String,String>> listAdapterUser =new ArrayList<HashMap<String,String>>();
     CustomAdapterUsers adapterUser;
 
     private Integer numFailed;
@@ -124,7 +124,6 @@ public class SearchFragment extends BaseFragment{
         final View view = inflater.inflate(R.layout.fragment_search, container, false);
         ButterKnife.bind(this, view);
 
-        ScrollSearchView.setVisibility(View.GONE);
         search_button.setImageResource(R.drawable.ic_search_black_24dp);
 
         adapterSong = new CustomAdapterSong(view.getContext(), listAdapterSongs,R.layout.list_row_song,
@@ -154,6 +153,23 @@ public class SearchFragment extends BaseFragment{
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+
+
+        if(!adapterUser.isEmpty()){
+            ScrollSearchViewUsers.setVisibility(View.VISIBLE);
+        }
+        if(!adapterAlbum.isEmpty()){
+            adapterAlbum.setArrayList(albumResultList);
+            ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
+        }
+        if(!adapterLista.isEmpty()){
+            ScrollSearchViewListas.setVisibility(View.VISIBLE);
+        }
+        if(!adapterSong.isEmpty()){
+            adapterSong.setArrayList(songResultList);
+            ScrollSearchViewSongs.setVisibility(View.VISIBLE);
+        }
+
         search_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -161,7 +177,6 @@ public class SearchFragment extends BaseFragment{
                 String query = search_text.getText().toString();
                 // if the query isnt empty, then search fro anything in the DB
                 if (!query.trim().isEmpty()){
-                    ScrollSearchView.setVisibility(View.GONE);
                     numFailed =0;
                     SearchTaskBySong searchTaskBySong = new SearchTaskBySong(query.trim());
                     searchTaskBySong.execute();
@@ -171,7 +186,6 @@ public class SearchFragment extends BaseFragment{
                     searchTaskByList.execute();
                     SearchTaskByUser searchTaskByUser = new SearchTaskByUser(query.trim());
                     searchTaskByUser.execute();
-                    ScrollSearchView.setVisibility(View.VISIBLE);
 
                 }
             }
@@ -186,14 +200,15 @@ public class SearchFragment extends BaseFragment{
                     // if the query isnt empty, then search fro anything in the DB
                     if (!query.trim().isEmpty()){
 
-                        ScrollSearchView.setVisibility(View.GONE);
-
+                        numFailed =0;
                         SearchTaskBySong searchTaskBySong = new SearchTaskBySong(query.trim());
                         searchTaskBySong.execute();
                         SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(query.trim());
                         searchTaskByAlbum.execute();
-                        ScrollSearchView.setVisibility(View.VISIBLE);
-
+                        SearchTaskByList searchTaskByList = new SearchTaskByList(query.trim());
+                        searchTaskByList.execute();
+                        SearchTaskByUser searchTaskByUser = new SearchTaskByUser(query.trim());
+                        searchTaskByUser.execute();
                     }
                     handled = true;
                 }
@@ -213,13 +228,14 @@ public class SearchFragment extends BaseFragment{
             }
         });
 
+
         album_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 if(mFragmentNavigation != null) {
                     ArrayList<Album> alb =  new ArrayList<>();
                     alb.add(albumResultList.get((int)l));
-                    mFragmentNavigation.pushFragment(SongListFragment.newInstance2(alb));
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceAlbum(alb));
                 }
             }
         });
@@ -235,7 +251,7 @@ public class SearchFragment extends BaseFragment{
             @Override
             public void onClick(View view) {
                 if(mFragmentNavigation != null) {
-                    mFragmentNavigation.pushFragment(SongListFragment.newInstance(songResultList));
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(songResultList));
                 }
             }
         });
@@ -450,6 +466,7 @@ public class SearchFragment extends BaseFragment{
                                 )
                         );
                     }
+                    resultArray.get(0);
                     adapterAlbum.setArrayList(albumResultList);
                 }else{
                     return false;
@@ -693,6 +710,7 @@ public class SearchFragment extends BaseFragment{
                         userResultList.add(resultArray.getString(i)
                         );
                     }
+                    resultArray.get(1);
 
                 }else{
                     return false;

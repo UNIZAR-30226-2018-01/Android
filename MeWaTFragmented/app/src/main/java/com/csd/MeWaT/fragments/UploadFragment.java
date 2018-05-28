@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -80,6 +81,14 @@ public class UploadFragment extends BaseFragment{
         // Inflate the layout for this fragment
         final View view = inflater.inflate(R.layout.fragment_upload, container, false);
         ButterKnife.bind(this, view);
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         setHasOptionsMenu(true);
 
         adapter = new ArrayAdapter<>(view.getContext(),R.layout.list_row_upload,names);
@@ -103,21 +112,18 @@ public class UploadFragment extends BaseFragment{
                 }
             }
         });
-        return view;
     }
-
-
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.actionbar_upload, menu);
+        inflater.inflate(R.menu.actionbar_plus, menu);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item){
         switch(item.getItemId()){
-            case R.id.addSongs:
+            case R.id.add:
                 Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
                 getIntent.setType("audio/*");
 

@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Album;
 import com.csd.MeWaT.utils.CustomAdapterSong;
 import com.csd.MeWaT.utils.DownloadSongImageTask;
+import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 
 import org.json.JSONArray;
@@ -57,14 +59,15 @@ public class SongListFragment extends BaseFragment {
 
 
     CustomAdapterSong adapter;
-    private static boolean fromalbum = false;
+    private static boolean fromalbum = false, fromlist = false;
 
     private Album album = null;
+    private Lista lista = null;
     private ArrayList<Song> songsList = new ArrayList<>();
     private ArrayList<HashMap<String, String>> songsListData = new ArrayList<>();
 
 
-    public static SongListFragment newInstance(ArrayList<Song> instance) {
+    public static SongListFragment newInstanceListSongs(ArrayList<Song> instance) {
         Bundle args = new Bundle();
         args.putSerializable(ARGS_INSTANCE, instance);
         SongListFragment fragment = new SongListFragment();
@@ -72,7 +75,7 @@ public class SongListFragment extends BaseFragment {
         return fragment;
     }
 
-    public static SongListFragment newInstance2(ArrayList<Album> instance) {
+    public static SongListFragment newInstanceAlbum(ArrayList<Album> instance) {
         Bundle args = new Bundle();
         args.putSerializable(ARGS_INSTANCE, instance);
         fromalbum = true;
@@ -81,10 +84,19 @@ public class SongListFragment extends BaseFragment {
         return fragment;
     }
 
+    public static SongListFragment newInstanceList(ArrayList<Lista> instance) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARGS_INSTANCE, instance);
+        fromlist = true;
+        SongListFragment fragment = new SongListFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
     }
 
@@ -100,17 +112,12 @@ public class SongListFragment extends BaseFragment {
 
         Bundle args = getArguments();
         if (args != null) {
-            if(fromalbum) album=((ArrayList<Album>) args.getSerializable(ARGS_INSTANCE)).get(0);
-            songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
+            if (fromalbum) album = ((ArrayList<Album>) args.getSerializable(ARGS_INSTANCE)).get(0);
+            else if (fromlist)
+                lista = ((ArrayList<Lista>) args.getSerializable(ARGS_INSTANCE)).get(0);
+            else songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
         }
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MainActivity.songsList=songsList;
-                MainActivity.songnumber=(int) l;
-            }
-        });
 
         return view;
     }
@@ -122,20 +129,32 @@ public class SongListFragment extends BaseFragment {
 
         // Adding menuItems to ListView
         adapter = new CustomAdapterSong(view.getContext(), songsListData,
-                R.layout.list_row_song, new String[] { "songTitle","songArtist" }, new int[] {
-                R.id.songTitle, R.id.songArtist });
+                R.layout.list_row_song, new String[]{"songTitle", "songArtist"}, new int[]{
+                R.id.songTitle, R.id.songArtist});
+
 
         listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity.songsList = songsList;
+                MainActivity.songnumber = (int) l;
+            }
+        });
         // listening to single listitem click
 
-        if(album!=null){
+        if (fromalbum) {
             SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(album.getName());
             new DownloadSongImageTask(imageView).execute(album.getUrlImg());
             textView.setText(album.getName());
             searchTaskByAlbum.execute();
             lnly.setVisibility(View.VISIBLE);
-        }else {
+        } else if (fromlist) {
 
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(lista.getName());
+            new SearchTaskBySong(lista.getName()).execute("VerLista");
+        } else {
 
             for (int i = 0; i < songsList.size(); i++) {
                 // creating new HashMap
@@ -146,7 +165,10 @@ public class SongListFragment extends BaseFragment {
                 // adding HashList to ArrayList
                 songsListData.add(song);
             }
+            adapter.setArrayList(songsList);
+
         }
+
     }
 
     /**
@@ -192,12 +214,12 @@ public class SongListFragment extends BaseFragment {
                 writer.flush();
                 writer.close();
                 int responseCode = client.getResponseCode();
-                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+                System.out.println("\nSending 'Get' request to URL : " + url + "--" + responseCode);
             } catch (MalformedURLException e) {
                 return false;
             } catch (SocketTimeoutException e) {
                 return false;
-            }catch (IOException e) {
+            } catch (IOException e) {
                 return false;
             }
             try {
@@ -207,7 +229,7 @@ public class SongListFragment extends BaseFragment {
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
 
-                for (String line = null; (line = reader.readLine()) != null ; ) {
+                for (String line = null; (line = reader.readLine()) != null; ) {
                     builder.append(line).append("\n");
                 }
 
@@ -217,28 +239,28 @@ public class SongListFragment extends BaseFragment {
                 JSONObject result = new JSONObject(tokener);
 
                 client.disconnect();
-                if (!result.has("error")){
+                if (!result.has("error")) {
 
                     JSONArray resultArray = result.getJSONArray("canciones");
-                    for(int i = 0; i<resultArray.length();i++){
+                    for (int i = 0; i < resultArray.length(); i++) {
                         JSONObject jsObj = resultArray.getJSONObject(i);
                         songsList.add(new Song(jsObj.getString("tituloCancion"),
                                         jsObj.getString("nombreAlbum"),
                                         jsObj.getString("nombreArtista"),
                                         jsObj.getString("genero"),
-                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
-                                        jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps", "https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..", "https://mewat1718.ddns.net")
                                 )
                         );
                     }
                     adapter.setArrayList(songsList);
 
-                }else{
+                } else {
                     return false;
                 }
 
 
-            }catch (IOException e){
+            } catch (IOException e) {
                 Throwable s = e.getCause();
                 return false;
             } catch (JSONException e) {
@@ -252,10 +274,10 @@ public class SongListFragment extends BaseFragment {
 
             if (success) {
                 songsListData.clear();
-                for(int i=0; i<4 && i<songsList.size();i++){
-                    HashMap<String,String> temp = new HashMap<String,String>();
-                    temp.put("songTitle",songsList.get(i).getTitle());
-                    temp.put("songArtist",songsList.get(i).getArtist());
+                for (int i = 0; i < 4 && i < songsList.size(); i++) {
+                    HashMap<String, String> temp = new HashMap<String, String>();
+                    temp.put("songTitle", songsList.get(i).getTitle());
+                    temp.put("songArtist", songsList.get(i).getArtist());
                     songsListData.add(temp);
                 }
                 adapter.notifyDataSetChanged();
@@ -271,4 +293,138 @@ public class SongListFragment extends BaseFragment {
 
         }
     }
+
+    /**
+     * Represents an asynchronous song search
+     */
+    public class SearchTaskBySong extends AsyncTask<String, Void, Boolean> {
+
+
+        String List = null;
+
+        SearchTaskBySong(String list) {
+            List = list;
+        }
+
+        boolean noresult = false;
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+
+            songsList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/" + params[0]);
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                if (List != null) {
+                    Uri.Builder builder = new Uri.Builder()
+                            .appendQueryParameter("nombreLista", List)
+                            .appendQueryParameter("nombreCreadorLista", MainActivity.user);             //Añade parametros
+                    String query = builder.build().getEncodedQuery();
+
+                    OutputStream os = client.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(query);
+                    writer.flush();
+                    writer.close();
+                }
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " + url + "--" + responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            } catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error") && !result.has("NoHayCanciones")) {
+
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for (int i = 0; i < resultArray.length(); i++) {
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        songsList.add(new Song(jsObj.getString("tituloCancion"),
+                                        jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
+                                        jsObj.getString("genero"),
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps", "https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..", "https://mewat1718.ddns.net")
+                                )
+                        );
+                    }
+                } else {
+                    if(!result.has("error")) noresult=true;
+                    else return false;
+                }
+
+
+            } catch (IOException e) {
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                if(!noresult){
+                    songsListData.clear();
+                    for (int i = 0; i < 4 && i < songsList.size(); i++) {
+                        HashMap<String, String> temp = new HashMap<String, String>();
+                        temp.put("songTitle", songsList.get(i).getTitle());
+                        temp.put("songArtist", songsList.get(i).getArtist());
+                        songsListData.add(temp);
+                    }
+                    adapter.notifyDataSetChanged();
+                }else Toast.makeText(getActivity().getApplicationContext(), "Lista Vacia",
+                        Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
 }

@@ -14,6 +14,7 @@ public class Song {
     private String album;
     private String artista;
     private String genero;
+    private Boolean like=false;
 
 
     /**
@@ -28,6 +29,7 @@ public class Song {
             if (i==3) this.genero=pars[3];
             if (i==4) this.url=pars[4];
             if (i==5) this.urlImg= pars[5];
+            if (i==6) this.like = pars[6].equals("true");
         }
     }
 
@@ -43,10 +45,23 @@ public class Song {
         return artista;
     }
 
+    public String getGenre() {
+        return genero;
+    }
 
     public String getTitle() {
         return title;
     }
 
-    public String getUrlImg() { return urlImg; }
+    public String getUrlImg() {
+        return urlImg;
+    }
+
+    public Boolean getLike() {
+        return like;
+    }
+
+    public void setLike(Boolean like) {
+        this.like = like;
+    }
 }

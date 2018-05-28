@@ -319,8 +319,8 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
 
+            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
             if (success) {
-                SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
 
                 p.edit().putBoolean("userAuthed",true).apply();
                 p.edit().putString("idSesion",idSesion).apply();
@@ -329,9 +329,11 @@ public class LoginActivity extends AppCompatActivity {
                 Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
                 MainActivity.putExtra("idSesion",idSesion);
                 MainActivity.putExtra("user",Username);
+                MainActivity.putExtra("password",mPassword);
                 LoginActivity.this.startActivity(MainActivity);
                 finish();
             } else {
+                p.edit().putBoolean("userAuthed",false).apply();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
