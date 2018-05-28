@@ -59,13 +59,6 @@ public class SocialFragment extends BaseFragment{
     /**********************************************************************
      * Code for edit profile
      **********************************************************************/
-    public SocialFragment(){
-
-    }
-
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
 
     @BindView(R.id.social_listView)
     ListView social_listView;
@@ -91,7 +84,6 @@ public class SocialFragment extends BaseFragment{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         final View view = inflater.inflate(R.layout.fragment_social, container, false);
         ButterKnife.bind(this, view);
@@ -114,8 +106,8 @@ public class SocialFragment extends BaseFragment{
         social_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                //MainActivity.songsList = resultList;
-                //MainActivity.songnumber = (int) l;
+                MainActivity.songsList = resultList;
+                MainActivity.songnumber = (int) l;
             }
         });
     }
@@ -217,7 +209,7 @@ public class SocialFragment extends BaseFragment{
                 listAdapter.clear();
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
-                    temp.put("artist",s.getArtista());
+                    temp.put("artist",s.getArtist());
                     temp.put("emisor",s.getAlbum());
                     listAdapter.add(temp);
                 }
