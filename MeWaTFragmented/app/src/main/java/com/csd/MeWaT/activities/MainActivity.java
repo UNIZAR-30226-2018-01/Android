@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -28,15 +30,31 @@ import com.csd.MeWaT.fragments.HomeFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
+import com.csd.MeWaT.fragments.SongListFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindArray;
 import butterknife.BindView;
@@ -87,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     public static MediaPlayer mp;
     public static ArrayList<Song> songsList = new ArrayList<>();
+    public static ArrayList<Song> favList = new ArrayList<>();
     public static String user, idSesion,password;
     public static Integer songnumber=0;
     public static Boolean isShuffle = false;
@@ -125,6 +144,10 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
         password = getIntent().getExtras().getString("password");
+
+
+        new SearchFavSongs().execute();
+
 
         setContentView(R.layout.activity_main);
         setSupportActionBar(toolbar);
@@ -519,7 +542,110 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         }
     }
 
-    public void setAsFavorite(View v){
+    public class SearchFavSongs extends AsyncTask<Void, Void, Boolean> {
+
+
+        SearchFavSongs() {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            favList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/VerLista");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("nombreLista", "favoritos")
+                        .appendQueryParameter("nombreCreadorLista", user);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        favList.add(new Song(jsObj.getString("tituloCancion"),
+                                        jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
+                                        jsObj.getString("genero"),
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
+                                )
+                        );
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
     }
+
 
 }

@@ -2,6 +2,8 @@ package com.csd.MeWaT.utils;
 
 import android.support.annotation.Nullable;
 
+import com.csd.MeWaT.activities.MainActivity;
+
 import java.io.Serializable;
 
 /**
@@ -29,7 +31,9 @@ public class Song {
             if (i==3) this.genero=pars[3];
             if (i==4) this.url=pars[4];
             if (i==5) this.urlImg= pars[5];
-            if (i==6) this.like = pars[6].equals("true");
+        }
+        for(Song s : MainActivity.favList){
+            if (s.equals(this)) this.like=true;
         }
     }
 
@@ -63,5 +67,12 @@ public class Song {
 
     public void setLike(Boolean like) {
         this.like = like;
+    }
+
+    public Boolean equals( Song compare){
+
+        return genero.equals(compare.getGenre()) && title.equals(compare.getTitle())
+                && album.equals(compare.getAlbum()) && artista.equals(compare.getArtist())
+                && url.equals(compare.getUrl()) && urlImg.equals(compare.getUrlImg());
     }
 }

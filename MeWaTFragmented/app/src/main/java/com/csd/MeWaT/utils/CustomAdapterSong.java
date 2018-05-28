@@ -40,6 +40,8 @@ public class CustomAdapterSong extends SimpleAdapter {
         new DownloadSongImageTask(thumbnail).execute(arrayList.get(position).getUrlImg());
 
         ImageButton like = (ImageButton) view.findViewById(R.id.likeButton);
+        if(arrayList.get(position).getLike()) like.setImageResource(R.drawable.ic_favorite_blue_filled_24dp);
+        else like.setImageResource(R.drawable.ic_favorite_border_black_24dp);
 
         like.setOnClickListener(new View.OnClickListener() {
             @Override
