@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="5dp"
     android:orientation="vertical"
     android:gravity="top">
 
@@ -15,9 +16,9 @@
             android:id="@+id/search_button"
             android:layout_width="30dp"
             android:layout_height="30dp"
-            android:layout_margin="10dp"
+            android:layout_margin="8dp"
             android:layout_gravity="center"
-            android:background="#00000000"
+            android:background="@color/transparent"
             app:srcCompat="@drawable/ic_search_black_24dp" />
 
         <EditText
@@ -25,6 +26,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:maxLines="1"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="10dp"
             android:imeOptions="actionSend"
             android:inputType="textCapWords|textAutoCorrect"
             android:hint="@string/buscar_cancion"

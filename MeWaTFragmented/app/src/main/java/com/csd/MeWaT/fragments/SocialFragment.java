@@ -59,6 +59,14 @@ public class SocialFragment extends BaseFragment{
     /**********************************************************************
      * Code for edit profile
      **********************************************************************/
+    public SocialFragment(){
+
+    }
+
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+
     @BindView(R.id.social_listView)
     ListView social_listView;
 
@@ -75,10 +83,14 @@ public class SocialFragment extends BaseFragment{
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
     }
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
         final View view = inflater.inflate(R.layout.fragment_social, container, false);

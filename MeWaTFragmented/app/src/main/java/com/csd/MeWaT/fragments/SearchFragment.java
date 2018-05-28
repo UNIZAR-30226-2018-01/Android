@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -130,6 +131,8 @@ public class SearchFragment extends BaseFragment {
         search_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity.songsList = resultList;
+                MainActivity.songnumber = (int) l;
 
             }
         });
@@ -157,13 +160,14 @@ public class SearchFragment extends BaseFragment {
 
             resultList = new ArrayList<>();
             try {
-                url = new URL("http://mewat1718.ddns.net/ps/BuscarCancionTitulo");
+
+                url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionTitulo");
 
                 client = (HttpsURLConnection) url.openConnection();
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -203,6 +207,7 @@ public class SearchFragment extends BaseFragment {
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
 
+                client.disconnect();
                 if (!result.has("error")){
 
                     JSONArray resultArray = result.getJSONArray("canciones");
@@ -212,7 +217,7 @@ public class SearchFragment extends BaseFragment {
                                 jsObj.getString("nombreArtista"),
                                 jsObj.getString("nombreAlbum"),
                                 jsObj.getString("genero")
-                                //,jsObj.getString("url")
+                                ,jsObj.getString("url")
                                 )
                         );
                     }
@@ -240,7 +245,7 @@ public class SearchFragment extends BaseFragment {
                 for(Song s: resultList){
                     temp.put("title",s.getTitle());
                     temp.put("album",s.getAlbum());
-                    temp.put("artist",s.getArtista());
+                    temp.put("artist",s.getArtist());
                     listAdapter.add(temp);
                 }
                 adapter.notifyDataSetChanged();
@@ -256,6 +261,7 @@ public class SearchFragment extends BaseFragment {
 
         }
     }
+
 
 
 }

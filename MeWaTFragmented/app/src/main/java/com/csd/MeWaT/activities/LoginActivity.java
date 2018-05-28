@@ -46,6 +46,23 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLSocketFactory;
+
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManagerFactory;
+import android.content.Context;
+import android.util.Log;
+
 
 /**
  * A login screen that offers login via User/password.
@@ -72,8 +89,10 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         //TODO: Escribir if version android >api 15
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 150);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.INTERNET}, 150+1);
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.INTERNET}
+                , 150);
+
 
 
         SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
@@ -224,8 +243,23 @@ public class LoginActivity extends AppCompatActivity {
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
+    public static Boolean connectionIsHttps (String urlString){
+        if (urlString.regionMatches(0, "https", 0, 5)){
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
 
-
+    public static String getHostNameFromUrl (String urlString){
+        if (connectionIsHttps(urlString)){
+            return urlString.substring(8,urlString.indexOf("/", 8));
+        }
+        else{
+            return urlString.substring(7,urlString.indexOf("/", 7));
+        }
+    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -257,8 +291,8 @@ public class LoginActivity extends AppCompatActivity {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                client.setDoOutput(true);
+
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
@@ -284,7 +318,6 @@ public class LoginActivity extends AppCompatActivity {
             }
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-                //client.disconnect();
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -298,7 +331,6 @@ public class LoginActivity extends AppCompatActivity {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
-
                 if (!result.has("error")){
                     Username = (String) result.get("login");
                     idSesion = (String) result.get("idSesion");
@@ -306,7 +338,8 @@ public class LoginActivity extends AppCompatActivity {
                     return false;
                 }
 
-
+            }catch (IOException e){
+                System.out.println(e);
             }
             catch (IOException e){
                 Throwable s = e.getCause();

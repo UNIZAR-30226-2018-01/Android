@@ -31,43 +31,70 @@
         android:layout_weight="9"
         android:orientation="vertical">
 
-
     </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/tab_player_layout"
+        style="@style/BottomTabLayout"
+        android:layout_width="match_parent"
+        android:visibility="visible"
+        android:orientation="vertical"
+        android:layout_height="50dp"
+        android:background="@color/white">
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@drawable/bottom_shadow" />
+        <ProgressBar
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:id="@+id/songProgressBarTabPlayer"
+            android:thumbTint="@color/blue"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <ImageButton
+                android:id="@+id/expandPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_expand_less_black_24dp"
+                android:background="@color/transparent"
+                android:layout_gravity="center"
+                android:layout_margin="10dp"/>
+            <TextView
+                android:id="@+id/songTitleTabPlayer"
+                android:layout_marginLeft="15dp"
+                android:layout_marginStart="15dp"
+                android:layout_gravity="center"
+                android:layout_weight="0.6"
+                android:layout_width="0dp"
+                android:text="@string/songTitle"
+                android:layout_height="wrap_content" />
+            <ImageButton
+                android:id="@+id/playTabPlayer"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+                app:srcCompat="@drawable/ic_play_arrow_black_24dp"
+                android:background="@color/transparent"/>
+        </LinearLayout>
+
+
+
+    </LinearLayout>
 
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@drawable/bottom_shadow" />
-<!--
-    <LinearLayout
-        android:id="@+id/tab_player_layout"
-        style="@style/BottomTabLayout"
-        android:layout_width="match_parent"
-        android:visibility="visible"
-        android:layout_height="80dp"
-        android:background="@color/white">
-
-        <ImageView
-            android:background="@drawable/image_border"
-            android:layout_margin="5dp"
-            android:layout_width="70dp"
-            android:layout_height="match_parent"
-            android:src="@drawable/logo"/>
-
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@drawable/bottom_shadow" />        -->
-
     <android.support.design.widget.TabLayout
         android:id="@+id/bottom_tab_layout"
         style="@style/BottomTabLayout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1.25"
+        android:layout_height="60dp"
         android:background="@color/white" />
 
 </LinearLayout>

@@ -35,11 +35,11 @@ public class Song {
         return album;
     }
 
-    public String getArtista() {
+    public String getArtist() {
         return artista;
     }
 
-    public String getGenero() {
+    public String getGender() {
         return genero;
     }
 

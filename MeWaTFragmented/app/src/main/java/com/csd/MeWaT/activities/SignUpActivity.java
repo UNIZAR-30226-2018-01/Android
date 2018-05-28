@@ -235,8 +235,8 @@ public class SignUpActivity extends AppCompatActivity {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                client.setDoOutput(true);
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
@@ -250,8 +250,6 @@ public class SignUpActivity extends AppCompatActivity {
                 writer.write(query);
                 writer.flush();
                 writer.close();
-                int responseCode = client.getResponseCode();
-                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
             } catch (MalformedURLException e) {
                 return false;
             } catch (SocketTimeoutException e) {
@@ -272,11 +270,11 @@ public class SignUpActivity extends AppCompatActivity {
                 }
 
                 // Parse into JSONObject
+
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
-
                 if (result.has("error")){
                     return false;
                 }
