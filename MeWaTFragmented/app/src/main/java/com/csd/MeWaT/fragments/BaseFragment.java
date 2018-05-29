@@ -29,6 +29,7 @@ public class BaseFragment extends Fragment {
 
     public interface FragmentNavigation {
          void pushFragment(Fragment fragment);
+         void pushFragment1(Fragment fragment, String title);
     }
 
 

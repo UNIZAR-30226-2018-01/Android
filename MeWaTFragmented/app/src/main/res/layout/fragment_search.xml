@@ -1,6 +1,5 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_margin="5dp"
@@ -30,8 +29,8 @@
             android:layout_marginStart="10dp"
             android:imeOptions="actionSend"
             android:inputType="textCapWords|textAutoCorrect"
-            android:hint="@string/buscar_cancion"
-            android:gravity="left"
+            android:hint="@string/buscar"
+            android:gravity="start"
             android:textSize="18sp" />
 
     </LinearLayout>
@@ -44,11 +43,172 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
-    <ListView
-        android:id="@+id/search_listview"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <ScrollView
+        android:id="@+id/ScrollSearchView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="visible">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
 
-    </ListView>
+            <LinearLayout
+                android:id="@+id/ScrollSearchViewSongs"
+                android:layout_width="match_parent"
+                android:visibility="gone"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Canciones"/>
+
+                <ListView
+                    android:id="@+id/songsearch_listview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="@color/grey"
+                    android:dividerHeight="1dp">
+
+                </ListView>
+                <TextView
+                    android:visibility="gone"
+                    android:id="@+id/moreSongs"
+                    android:layout_width="match_parent"
+                    android:layout_height="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:text="Ver mas..."
+                    android:layout_marginBottom="15dp"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_marginTop="10dp"
+                android:visibility="gone"
+                android:id="@+id/ScrollSearchViewAlbums"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Albums"/>
+
+                <GridView
+                    android:id="@+id/albumsearch_listview"
+                    android:isScrollContainer="false"
+                    android:layout_width="match_parent"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginStart="70dp"
+                    android:layout_marginRight="50dp"
+                    android:layout_marginEnd="50dp"
+                    android:verticalSpacing="10dp"
+                    android:horizontalSpacing="20dp"
+                    android:numColumns="2"
+                    android:layout_height="wrap_content" >
+
+                </GridView>
+
+                <TextView
+                    android:visibility="gone"
+                    android:id="@+id/moreAlbums"
+                    android:layout_width="match_parent"
+                    android:layout_height="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:text="Ver mas..."
+                    android:layout_marginBottom="15dp"/>
+
+            </LinearLayout>
+            <LinearLayout
+                android:layout_marginTop="10dp"
+                android:visibility="gone"
+                android:id="@+id/ScrollSearchViewListas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Listas"/>
+
+                <ListView
+                    android:isScrollContainer="false"
+                    android:id="@+id/listsearch_listview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:divider="#242424"
+                    android:dividerHeight="1dp">
+
+                </ListView>
+
+                <TextView
+                    android:visibility="gone"
+                    android:id="@+id/moreLists"
+                    android:layout_width="match_parent"
+                    android:layout_height="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:text="Ver mas..."
+                    android:layout_marginBottom="15dp"/>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:layout_marginTop="20dp"
+                android:visibility="gone"
+                android:id="@+id/ScrollSearchViewUsers"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="Usuarios"/>
+
+                <GridView
+                    android:id="@+id/usersearch_listview"
+                    android:isScrollContainer="false"
+                    android:layout_width="match_parent"
+                    android:layout_marginLeft="70dp"
+                    android:layout_marginStart="70dp"
+                    android:layout_marginRight="50dp"
+                    android:layout_marginEnd="50dp"
+                    android:verticalSpacing="10dp"
+                    android:horizontalSpacing="40dp"
+                    android:numColumns="2"
+                    android:layout_height="wrap_content" >
+
+                </GridView>
+
+                <TextView
+                    android:visibility="gone"
+                    android:id="@+id/moreUsers"
+                    android:layout_width="match_parent"
+                    android:layout_height="15dp"
+                    android:layout_marginLeft="15dp"
+                    android:layout_marginStart="15dp"
+                    android:text="Ver mas..."
+                    android:layout_marginBottom="15dp"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+    </ScrollView>
+
+
+
 
 </LinearLayout>

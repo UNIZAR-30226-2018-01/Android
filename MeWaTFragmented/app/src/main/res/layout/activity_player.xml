@@ -4,7 +4,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    tools:context=".activities.PlayerActivity">
+    tools:context=".activities.PlayerActivity"
+    android:layout_margin="5dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -20,18 +21,19 @@
             app:srcCompat="@drawable/ic_expand_more_black_24dp"
             android:background="@color/transparent"
             android:layout_margin="30dp"/>
+
         <TextView
             android:id="@+id/songTitle"
-            android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
-            android:layout_marginTop="33dp"
-            android:text="" />
+            android:layout_marginTop="68dp"
+            android:text=""
+            android:textColor="@color/black" />
 
         <TextView
-            android:id="@+id/albumTitle"
+            android:id="@+id/songAlbum"
             android:textColor="@color/black"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -40,6 +42,15 @@
             android:layout_marginTop="8dp"
             android:text="" />
 
+        <TextView
+            android:id="@+id/songArtist"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/album_thumbnail"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="8dp"
+            android:text="" />
         <ImageButton
             android:id="@+id/btnPlaylist"
             android:background="@android:color/transparent"
@@ -57,10 +68,10 @@
             android:layout_width="200dp"
             android:layout_height="200dp"
             android:layout_centerHorizontal="true"
-            android:layout_below="@+id/albumTitle"
+            android:layout_below="@+id/songAlbum"
             android:layout_above="@+id/timerDisplay"
             android:contentDescription="@string/album_thumbnail"
-            android:src="@drawable/logo"
+            android:src="@drawable/ic_launcher"
             app:civ_border_color="@color/black"
             app:civ_border_width="2dp" />
 

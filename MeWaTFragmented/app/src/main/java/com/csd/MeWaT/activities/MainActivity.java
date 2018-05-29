@@ -1,12 +1,12 @@
 package com.csd.MeWaT.activities;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.TabLayout;
@@ -15,7 +15,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -24,30 +23,48 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
-import com.csd.MeWaT.fragments.SocialFragment;
+import com.csd.MeWaT.fragments.ListListFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
+import com.csd.MeWaT.fragments.SocialFragment;
+import com.csd.MeWaT.fragments.SongListFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
+import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Random;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 
-public class MainActivity extends AppCompatActivity implements FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener   {
+public class MainActivity extends AppCompatActivity implements BaseFragment.FragmentNavigation,FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener   {
 
 
 
@@ -81,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     private Handler mHandler = new Handler();;
 
+    private int pos=0;
     private int[] mTabIconsSelected = {
             R.drawable.tab_home,
             R.drawable.tab_search,
@@ -90,20 +108,19 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     public static MediaPlayer mp;
     public static ArrayList<Song> songsList = new ArrayList<>();
-    public static String user, idSesion;
+    public static ArrayList<Song> favList = new ArrayList<>();
+    public static String user, idSesion,password;
     public static Integer songnumber=0;
     public static Boolean isShuffle = false;
     public static Integer isRepeat = 0;
     public static Boolean resumed = false;
 
-
-    static final int USER_AUTH = 1;
     private FragNavController mNavController;
-
-
     private FragmentHistory fragmentHistory;
 
-    private int returnpermission=150;
+    public static ArrayList<Song> favsSongs = new ArrayList<>();
+    public static ArrayList<Lista> lists = new ArrayList<>();
+
 
 
     @Override
@@ -117,6 +134,8 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             @Override
             public void onPrepared(MediaPlayer mediaPlayer) {
                 mp.start();
+                SongProgressBarTabPlayer.setProgress(0);
+                SongProgressBarTabPlayer.setMax(100);
                 // Updating progress bar
                 updateProgressBar();
             }
@@ -128,10 +147,18 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
+        password = getIntent().getExtras().getString("password");
+
+
+        new SearchFavSongs().execute();
+        new SearchListByUser().execute();
+
 
         setContentView(R.layout.activity_main);
         setSupportActionBar(toolbar);
         tabPlayerLayout = (LinearLayout) this.findViewById(R.id.tab_player_layout);
+
+
         ButterKnife.bind(this);
 
 
@@ -140,12 +167,10 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         initToolbar();
 
         initTab();
+        fragmentHistory = new FragmentHistory();
 
         SongProgressBarTabPlayer.setProgress(0);
         SongProgressBarTabPlayer.setMax(100);
-
-        fragmentHistory = new FragmentHistory();
-
 
         mNavController = FragNavController.newBuilder(savedInstanceState, getSupportFragmentManager(), R.id.content_frame)
                 .transactionListener(this)
@@ -193,9 +218,8 @@ public class MainActivity extends AppCompatActivity implements FragNavController
                     } else {
                         // Resume song
                         if (mp != null) {
-                            if(!resumed)playSong(songnumber);
                             if(!SongProgressBarTabPlayer.isEnabled())SongProgressBarTabPlayer.setEnabled(true);
-                            mp.start();
+                            playSong(songnumber);
                             // Changing button image to pause button
                             playTabPlayer.setImageResource(R.drawable.ic_pause_black_24dp);
                         }
@@ -217,7 +241,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
         tabPlayerLayout.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View view, boolean b) {
-                if(b){
+                if(b && mp.isPlaying()){
                     songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
                     // Updating progress bar
                     updateProgressBar();
@@ -236,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             resumed=true;
             mp.reset();
             mp.setDataSource(songsList.get(songIndex).getUrl());
-            mp.prepare();
+            mp.prepareAsync();
             // Displaying Song title
             String songTitle = songsList.get(songIndex).getTitle();
             songTitleTabPlayer.setText(songTitle);
@@ -327,8 +351,9 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
 
     private void switchTab(int position) {
-        if(position!=2)tabPlayerLayout.setVisibility(View.VISIBLE);
-        else tabPlayerLayout.setVisibility(View.GONE);
+        pos=position;
+        mNavController.clearStack();
+        Hola.clear();
         mNavController.switchTab(position);
         updateToolbarTitle(position);
     }
@@ -338,9 +363,10 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     protected void onResume() {
 
         super.onResume();
-       if(resumed) songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
-
-        updateProgressBar();
+       if(mp.isPlaying()){
+           songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
+            updateProgressBar();
+       }
 
 
     }
@@ -352,51 +378,6 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     }
 
 
-    @Override
-    public void onBackPressed() {
-
-        if (!mNavController.isRootFragment()) {
-            mNavController.popFragment();
-        } else {
-
-            if (fragmentHistory.isEmpty()) {
-                super.onBackPressed();
-            } else {
-
-
-                if (fragmentHistory.getStackSize() > 1) {
-
-                    int position = fragmentHistory.popPrevious();
-
-                    switchTab(position);
-
-                    updateTabSelection(position);
-
-                } else {
-
-                    switchTab(0);
-
-                    updateTabSelection(0);
-
-                    fragmentHistory.emptyStack();
-                }
-            }
-
-        }
-    }
-
-
-    private void updateTabSelection(int currentTab){
-
-        for (int i = 0; i <  TABS.length; i++) {
-            TabLayout.Tab selectedTab = bottomTabLayout.getTabAt(i);
-            if(currentTab != i) {
-                selectedTab.getCustomView().setSelected(false);
-            }else{
-                selectedTab.getCustomView().setSelected(true);
-            }
-        }
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -411,10 +392,7 @@ public class MainActivity extends AppCompatActivity implements FragNavController
     public void onTabTransaction(Fragment fragment, int index) {
         // If we have a backstack, show the back button
         if (getSupportActionBar() != null && mNavController != null) {
-
-
             updateToolbar();
-
         }
     }
 
@@ -469,6 +447,81 @@ public class MainActivity extends AppCompatActivity implements FragNavController
 
     }
 
+    public static ArrayList<String> Hola = new ArrayList<>();
+
+    @Override
+    public void pushFragment(Fragment fragment) {
+        if (mNavController != null) {
+            Hola.add(TABS[pos]);
+            mNavController.pushFragment(fragment);
+        }
+    }
+
+    @Override
+    public void pushFragment1(Fragment fragment,String Title){
+        if (mNavController != null) {
+            Hola.add(Title);
+            mNavController.pushFragment(fragment);
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        getSupportActionBar().setTitle(Hola.get(Hola.size()-1));
+        Hola.remove(Hola.get(Hola.size()-1));
+        if (!mNavController.isRootFragment()) {
+            mNavController.popFragment();
+        } else {
+
+            if (fragmentHistory.isEmpty()) {
+                super.onBackPressed();
+            } else {
+
+
+                if (fragmentHistory.getStackSize() > 1) {
+
+                    int position = fragmentHistory.popPrevious();
+
+                    switchTab(position);
+
+                    updateTabSelection(position);
+
+                } else {
+
+                    switchTab(0);
+
+                    updateTabSelection(0);
+
+                    fragmentHistory.emptyStack();
+                }
+            }
+
+        }
+    }
+
+
+    private void updateTabSelection(int currentTab){
+
+        for (int i = 0; i <  TABS.length; i++) {
+            TabLayout.Tab selectedTab = bottomTabLayout.getTabAt(i);
+            if(currentTab != i) {
+                selectedTab.getCustomView().setSelected(false);
+            }else{
+                selectedTab.getCustomView().setSelected(true);
+            }
+        }
+    }
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
@@ -496,5 +549,216 @@ public class MainActivity extends AppCompatActivity implements FragNavController
             }
         }
     }
+
+    public class SearchFavSongs extends AsyncTask<Void, Void, Boolean> {
+
+
+        SearchFavSongs() {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            favList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/VerLista");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("nombreLista", "favoritos")
+                        .appendQueryParameter("nombreCreadorLista", user);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        favList.add(new Song(jsObj.getString("tituloCancion"),
+                                        jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
+                                        jsObj.getString("genero"),
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
+                                )
+                        );
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous song search
+     */
+    public class SearchListByUser extends AsyncTask<String, Void, Boolean> {
+
+
+        SearchListByUser(){}
+
+        ArrayList<Lista> rubbish = new ArrayList<>();
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            rubbish.clear();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/MostrarListasReproduccion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("user", MainActivity.user)
+                        .appendQueryParameter("contrasenya", MainActivity.password);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("nombre");
+                    for(int i = 0; i<resultArray.length();i++){
+                        if(!resultArray.getString(i).equals("Favoritos"))rubbish.add(new Lista(resultArray.getString(i),MainActivity.user));
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                lists = rubbish;
+            } else {
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
 
 }
