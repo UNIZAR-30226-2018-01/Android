@@ -1,7 +1,10 @@
 package com.csd.MeWaT.fragments;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -65,6 +68,7 @@ public class ListListFragment extends BaseFragment {
         args.putSerializable(ARGS_INSTANCE, instance);
         ListResultList = instance;
 
+        ListListAdapter.clear();
         for(Lista s: ListResultList){
             HashMap<String,String> temp =  new HashMap<>();
             temp.put("nombre",s.getName());
@@ -122,7 +126,7 @@ public class ListListFragment extends BaseFragment {
                 if(mFragmentNavigation != null) {
                     ArrayList<Lista> alb =  new ArrayList<>();
                     alb.add(ListResultList.get((int)l));
-                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceList(alb));
+                    mFragmentNavigation.pushFragment1(SongListFragment.newInstanceList(alb),"Mis Listas");
                 }
             }
         });
@@ -266,7 +270,6 @@ public class ListListFragment extends BaseFragment {
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -333,6 +336,15 @@ public class ListListFragment extends BaseFragment {
                         }
                     }
                 }else{
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
 

@@ -68,7 +68,7 @@
                 android:background="@drawable/bottom_shadow" />
 
             <Button
-                android:id="@+id/followingButton"
+                android:id="@+id/followedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -82,7 +82,7 @@
                 android:background="@drawable/bottom_shadow" />
 
             <Button
-                android:id="@+id/followedButton"
+                android:id="@+id/followingButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"

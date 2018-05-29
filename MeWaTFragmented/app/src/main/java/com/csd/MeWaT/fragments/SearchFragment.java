@@ -1,5 +1,10 @@
 package com.csd.MeWaT.fragments;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -10,6 +15,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageButton;
@@ -22,6 +28,7 @@ import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.utils.Album;
 import com.csd.MeWaT.utils.CustomAdapterAlbum;
 import com.csd.MeWaT.utils.CustomAdapterSong;
@@ -30,6 +37,7 @@ import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -46,6 +54,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -93,19 +102,22 @@ public class SearchFragment extends BaseFragment{
     private static ArrayList<HashMap<String,String>> listAdapterSongs =new ArrayList<HashMap<String,String>>();
     CustomAdapterSong adapterSong;
 
-    private static ArrayList<Album> albumResultList;
+    private static ArrayList<Album> albumResultList= new ArrayList<>();
     private static ArrayList<HashMap<String,String>> listAdapterAlbums =new ArrayList<HashMap<String,String>>();
     CustomAdapterAlbum adapterAlbum;
 
-    private static ArrayList<Lista> listaResultList;
+    private static ArrayList<Lista> listaResultList= new ArrayList<>();
     private static ArrayList<HashMap<String,String>> listAdapterLista =new ArrayList<HashMap<String,String>>();
     SimpleAdapter adapterLista;
 
-    private static ArrayList<String> userResultList;
+    private static ArrayList<String> userResultList= new ArrayList<>();
     private static ArrayList<HashMap<String,String>> listAdapterUser =new ArrayList<HashMap<String,String>>();
     CustomAdapterUsers adapterUser;
 
+
     private Integer numFailed;
+
+    String options;
 
 
     public SearchFragment(){
@@ -153,6 +165,7 @@ public class SearchFragment extends BaseFragment{
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        final ArrayAdapter<String> arrayAdapter= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,new String []{"Compartir","Añadir a Lista"});
 
 
         if(!adapterUser.isEmpty()){
@@ -224,7 +237,102 @@ public class SearchFragment extends BaseFragment{
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 MainActivity.songsList = songResultList;
                 MainActivity.songnumber = (int) l;
+                Intent player = new Intent(getActivity(),PlayerActivity.class);
+                getActivity().startActivity(player);
 
+            }
+        });
+
+
+        song_listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final Integer l2 = (int)l;
+                AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
+                builderSingle.setTitle("Opciones");
+
+                builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        AlertDialog.Builder builderInner = new AlertDialog.Builder(getContext());
+
+                        options = arrayAdapter.getItem(which);
+
+                        builderInner.setTitle(options);
+                        builderInner.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        List<String> listas = new ArrayList<>();
+                        for(Lista ls : MainActivity.lists) listas.add(ls.getName());
+                        final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
+
+                        builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                new Add2List(l2).execute(arrayAdapter2.getItem(which));
+                            }
+                        });
+                        builderInner.show();
+                    }
+                });
+                builderSingle.show();
+
+                return false;
+            }
+        });
+
+        user_listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+                final int l2 = (int)l;
+
+                AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
+                builderSingle.setTitle("Seguir");
+
+                String option="Seguir";
+
+                builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                for(String s : MainActivity.followedUser) {
+                    if (s.equals(userResultList.get((int) l))) option = "Dejar de Seguir";
+                }
+                if(option.equals("Seguir")){
+                    builderSingle.setPositiveButton(option, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            new FollowUser("SeguirUsuario",userResultList.get(l2)).execute();
+                        }
+                    });
+                }else{
+                    builderSingle.setPositiveButton(option, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            new FollowUser("DejarDeSeguirUsuario",userResultList.get(l2)).execute();
+                        }
+                    });
+                }
+
+
+                builderSingle.show();
+
+                return false;
             }
         });
 
@@ -270,14 +378,14 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
-            songResultList = new ArrayList<>();
+            songResultList.clear();
             try {
+
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionTitulo");
 
                 client = (HttpsURLConnection) url.openConnection();
@@ -323,6 +431,7 @@ public class SearchFragment extends BaseFragment{
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 client.disconnect();
                 if (!result.has("error")){
@@ -339,9 +448,21 @@ public class SearchFragment extends BaseFragment{
                                 )
                         );
                     }
+                    resultArray.get(0);
                     adapterSong.setArrayList(songResultList);
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -372,6 +493,7 @@ public class SearchFragment extends BaseFragment{
 
 
             } else {
+                ScrollSearchViewSongs.setVisibility(View.GONE);
                 if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
@@ -398,13 +520,12 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
-            albumResultList = new ArrayList<>();
+            albumResultList.clear();
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarAlbum");
 
@@ -469,7 +590,18 @@ public class SearchFragment extends BaseFragment{
                     resultArray.get(0);
                     adapterAlbum.setArrayList(albumResultList);
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -499,6 +631,7 @@ public class SearchFragment extends BaseFragment{
                 else ScrollSearchViewAlbums.setVisibility(View.GONE);
                 adapterAlbum.notifyDataSetChanged();
             } else {
+                ScrollSearchViewAlbums.setVisibility(View.GONE);
                 if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
@@ -525,13 +658,12 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
-            listaResultList= new ArrayList<>();
+            listaResultList.clear();
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarLista");
 
@@ -589,10 +721,22 @@ public class SearchFragment extends BaseFragment{
                                         jsObj.getString("nombreUsuario")
                                 )
                         );
-                    }
+
+                        resultArray.get(0);                    }
 
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -616,12 +760,12 @@ public class SearchFragment extends BaseFragment{
                     temp.put("userOwn",listaResultList.get(i).getUserOwner());
                     listAdapterLista.add(temp);
                 }
-                adapterLista.notifyDataSetChanged();
                 Utils.setListViewHeightBasedOnChildren(list_listView);
                 if (listAdapterLista.size()>0)ScrollSearchViewListas.setVisibility(View.VISIBLE);
                 else ScrollSearchViewListas.setVisibility(View.GONE);
-
+                adapterLista.notifyDataSetChanged();
             } else {
+                ScrollSearchViewListas.setVisibility(View.GONE);
                 if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
@@ -648,13 +792,12 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
 
-            userResultList = new ArrayList<>();
+            userResultList.clear();
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarUsuarios");
 
@@ -710,10 +853,21 @@ public class SearchFragment extends BaseFragment{
                         userResultList.add(resultArray.getString(i)
                         );
                     }
-                    resultArray.get(1);
-
+                    resultArray.get(0);
+                    adapterUser.setArrayList(userResultList);
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -736,12 +890,13 @@ public class SearchFragment extends BaseFragment{
                     temp.put("user",userResultList.get(i));
                     listAdapterUser.add(temp);
                 }
-                adapterUser.notifyDataSetChanged();
                 Utils.setListViewHeightBasedOnChildren(user_listView);
                 if (listAdapterUser.size()>0)ScrollSearchViewUsers.setVisibility(View.VISIBLE);
                 else ScrollSearchViewUsers.setVisibility(View.GONE);
+                adapterUser.notifyDataSetChanged();
 
             } else {
+                ScrollSearchViewUsers.setVisibility(View.GONE);
                 if(numFailed++==4)
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
                         Toast.LENGTH_SHORT).show();
@@ -755,6 +910,238 @@ public class SearchFragment extends BaseFragment{
         }
     }
 
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class Add2List extends AsyncTask<String, Void, Boolean> {
 
+        private final Integer l;
+
+        Add2List(Integer index) {
+            l = index;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/AnyadirCancionALista");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("ruta", songResultList.get(l).getUrl().replace("https://mewat1718.ddns.net","/usr/local/apache-tomcat-9.0.7/webapps"))
+                        .appendQueryParameter("nombreLista",params[0]);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Añadida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                    Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
+                            Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class FollowUser extends AsyncTask<Void, Void, Boolean> {
+
+
+        String servlet,user;
+        FollowUser(String ask, String usuario){
+            servlet = ask;
+
+            user = usuario;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void ... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/"+servlet);
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter(servlet.equals("SeguirUsuario")?"seguido":"nombreSeguido", user);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                if (servlet.equals("DejarDeSeguirUsuario")){
+                    Toast.makeText(getActivity().getApplicationContext(), "Usuario dejado de Seguir",
+                            Toast.LENGTH_SHORT).show();
+                    MainActivity.followedUser.remove(user);
+                }
+                else {
+                    Toast.makeText(getActivity().getApplicationContext(), "Usuario Seguido",
+                            Toast.LENGTH_SHORT).show();
+                    MainActivity.followedUser.add(user);
+                }
+
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Sin exito",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
 
 }

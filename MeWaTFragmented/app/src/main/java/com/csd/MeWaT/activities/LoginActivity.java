@@ -40,11 +40,13 @@ import java.net.URL;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.utils.Library;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.net.ssl.HttpsURLConnection;
+
 
 /**
  * A login screen that offers login via User/password.
@@ -76,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
         if(sp.getBoolean("userAuthed",false)){
             Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
             MainActivity.putExtra("idSesion",sp.getString("idSesion",""));
@@ -255,8 +257,8 @@ public class LoginActivity extends AppCompatActivity {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+
                 client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-                client.setDoOutput(true);
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
@@ -283,7 +285,6 @@ public class LoginActivity extends AppCompatActivity {
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
 
-
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
 
@@ -296,7 +297,6 @@ public class LoginActivity extends AppCompatActivity {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
-
                 if (!result.has("error")){
                     Username = (String) result.get("login");
                     idSesion = (String) result.get("idSesion");
@@ -304,9 +304,9 @@ public class LoginActivity extends AppCompatActivity {
                     return false;
                 }
 
-
             }catch (IOException e){
                 System.out.println(e);
+                Throwable s = e.getCause();
                 return false;
             } catch (JSONException e) {
                 return false;
@@ -319,7 +319,7 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
 
-            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences p = getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
             if (success) {
 
                 p.edit().putBoolean("userAuthed",true).apply();
