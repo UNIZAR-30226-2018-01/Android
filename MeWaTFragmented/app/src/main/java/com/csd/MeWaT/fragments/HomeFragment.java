@@ -201,7 +201,6 @@ public class HomeFragment extends BaseFragment {
         Boolean tipo = false;
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -349,7 +348,6 @@ public class HomeFragment extends BaseFragment {
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;

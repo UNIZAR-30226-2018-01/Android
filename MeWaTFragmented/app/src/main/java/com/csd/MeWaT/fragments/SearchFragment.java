@@ -332,7 +332,6 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -464,7 +463,6 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -592,7 +590,6 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -717,7 +714,6 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -838,7 +834,6 @@ public class SearchFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;

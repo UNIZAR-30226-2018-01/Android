@@ -245,7 +245,6 @@ public class SongListFragment extends BaseFragment {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -370,7 +369,6 @@ public class SongListFragment extends BaseFragment {
         boolean noresult = false;
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -503,7 +501,6 @@ public class SongListFragment extends BaseFragment {
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;

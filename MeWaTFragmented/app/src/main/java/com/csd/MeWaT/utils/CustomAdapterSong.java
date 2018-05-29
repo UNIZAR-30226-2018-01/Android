@@ -104,7 +104,6 @@ public class CustomAdapterSong extends SimpleAdapter {
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;

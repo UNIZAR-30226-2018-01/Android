@@ -164,7 +164,7 @@ public class ProfileFragment extends BaseFragment{
         switch(item.getItemId()){
             case R.id.settingsbutton:
                 if(mFragmentNavigation != null) {
-                    mFragmentNavigation.pushFragment(new SettingsFragment());
+                    mFragmentNavigation.pushFragment(new ModifyFragment());
                 }
             default:
                 return super.onOptionsItemSelected(item);
@@ -187,7 +187,6 @@ public class ProfileFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -300,7 +299,6 @@ public class ProfileFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -405,7 +403,6 @@ public class ProfileFragment extends BaseFragment{
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;

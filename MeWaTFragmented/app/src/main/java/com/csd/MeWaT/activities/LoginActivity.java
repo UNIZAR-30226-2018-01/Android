@@ -306,8 +306,6 @@ public class LoginActivity extends AppCompatActivity {
 
             }catch (IOException e){
                 System.out.println(e);
-            }
-            catch (IOException e){
                 Throwable s = e.getCause();
                 return false;
             } catch (JSONException e) {

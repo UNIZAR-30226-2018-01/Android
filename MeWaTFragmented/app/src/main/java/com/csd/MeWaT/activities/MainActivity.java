@@ -559,7 +559,6 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
         @Override
         protected Boolean doInBackground(Void... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
@@ -667,7 +666,6 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
         @Override
         protected Boolean doInBackground(String... params) {
-            // TODO: attempt authentication against a network service.
             URL url;
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
