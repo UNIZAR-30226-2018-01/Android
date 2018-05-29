@@ -1,133 +1,134 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView android:layout_weight="7"
+    android:paddingLeft="15dp"
+    android:paddingStart="15dp"
+    android:paddingRight="15dp"
+    android:paddingEnd="15dp"
+    android:scrollbarStyle="outsideOverlay"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:layout_weight="7"
-    android:layout_margin="15dp">
-    <ScrollView
+    android:clipToPadding="false"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <LinearLayout
+        android:id="@+id/ScrollViewHome"
         android:layout_width="match_parent"
-        android:clipToPadding="false"
+        android:orientation="vertical"
         android:layout_height="wrap_content">
+
         <LinearLayout
-            android:id="@+id/ScrollViewHome"
+            android:id="@+id/LayoutRecientes"
             android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_height="wrap_content">
+            android:visibility="gone">
 
-            <LinearLayout
-                android:id="@+id/LayoutRecientes"
+            <TextView
+                android:layout_width="65dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Recientes" />
+
+            <View
+                android:layout_width="60dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bottom_shadow" />
+
+            <GridView
+
+                android:id="@+id/RecListView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:isScrollContainer="false"
+                android:columnWidth="10dp"
+                android:numColumns="2" />
 
-                <TextView
-                    android:layout_width="65dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="Recientes" />
-
-                <View
-                    android:layout_width="60dp"
-                    android:layout_height="1dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="20dp"
-                    android:background="@drawable/bottom_shadow" />
-
-                <GridView
-
-                    android:id="@+id/RecListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:columnWidth="10dp"
-                    android:numColumns="2" />
-
-                <TextView
-                    android:id="@+id/moreRecents"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="15dp"
-                    android:text="Ver más..."
-                    android:visibility="gone" />
-
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/LayoutTopSem"
+            <TextView
+                android:id="@+id/moreRecents"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+                android:text="Ver más..."
+                android:visibility="gone" />
 
-                <TextView
-                    android:layout_width="50dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="TOP 10" />
-
-                <View
-                    android:layout_width="45dp"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="20dp"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@drawable/bottom_shadow" />
-
-                <GridView
-                    android:id="@+id/TopSemListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:columnWidth="10dp"
-                    android:numColumns="2" />
-
-                <TextView
-                    android:id="@+id/moreTopSem"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="15dp"
-                    android:text="Ver más..."
-                    android:visibility="gone" />
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/LayoutGeneros"
-                android:layout_marginTop="15dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:visibility="gone">
-
-
-                <TextView
-                    android:layout_width="60dp"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:text="Géneros" />
-
-                <View
-                    android:layout_width="60dp"
-                    android:layout_height="1dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginBottom="20dp"
-                    android:background="@drawable/bottom_shadow" />
-
-                <GridView
-                    android:id="@+id/GenreListView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:columnWidth="10dp"
-                    android:horizontalSpacing="15dp"
-                    android:numColumns="2"
-                    android:verticalSpacing="15dp" />
-
-                <TextView
-                    android:id="@+id/moreGenre"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_margin="15dp"
-                    android:text="Ver más..."
-                    android:visibility="gone" />
-            </LinearLayout>
         </LinearLayout>
-    </ScrollView>
 
-</LinearLayout>
+        <LinearLayout
+            android:id="@+id/LayoutTopSem"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="TOP 10" />
+
+            <View
+                android:layout_width="45dp"
+                android:layout_height="1dp"
+                android:layout_marginBottom="20dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bottom_shadow" />
+
+            <GridView
+                android:id="@+id/TopSemListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:isScrollContainer="false"
+                android:columnWidth="10dp"
+                android:numColumns="2" />
+
+            <TextView
+                android:id="@+id/moreTopSem"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+                android:text="Ver más..."
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/LayoutGeneros"
+            android:layout_marginTop="15dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+
+            <TextView
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Géneros" />
+
+            <View
+                android:layout_width="60dp"
+                android:layout_height="1dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="20dp"
+                android:background="@drawable/bottom_shadow" />
+
+            <GridView
+                android:id="@+id/GenreListView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:isScrollContainer="false"
+                android:columnWidth="10dp"
+                android:horizontalSpacing="15dp"
+                android:numColumns="2"
+                android:verticalSpacing="15dp" />
+
+            <TextView
+                android:id="@+id/moreGenre"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="15dp"
+                android:text="Ver más..."
+                android:visibility="gone" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

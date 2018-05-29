@@ -427,7 +427,7 @@ public class Utils {
         }
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
-        params.height = totalHeight + (listView.getDividerHeight() * (listAdapter.getCount() - 1));
+        params.height = totalHeight + (30 * (listAdapter.getCount())) ;
         listView.setLayoutParams(params);
         listView.requestLayout();
     }
@@ -441,7 +441,35 @@ public class Utils {
 
         int totalHeight = 0;
         int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
-        for (int i = 0; i < listAdapter.getCount()/listView.getNumColumns(); i++) {
+        for (int i = 0; i < listAdapter.getCount()/2; i++) {
+            View listItem = listAdapter.getView(i, null, listView);
+            listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+        if(listAdapter.getCount()<2){
+            View listItem = listAdapter.getView(0, null, listView);
+            listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
+            totalHeight += listItem.getMeasuredHeight();
+        }
+        totalHeight = totalHeight>400?400:totalHeight;
+
+        ViewGroup.LayoutParams params = listView.getLayoutParams();
+
+        params.height = totalHeight + (15 * (listAdapter.getCount()/2 - 1)) +25;
+        listView.setLayoutParams(params);
+        listView.requestLayout();
+    }
+
+    public static void setListViewHeightBasedOnChildrenSearch(GridView listView) {
+        ListAdapter listAdapter = listView.getAdapter();
+        if (listAdapter == null) {
+            // pre-condition
+            return;
+        }
+
+        int totalHeight = 0;
+        int desiredWidth = View.MeasureSpec.makeMeasureSpec(listView.getWidth(), View.MeasureSpec.AT_MOST);
+        for (int i = 0; i < listAdapter.getCount()/2; i++) {
             View listItem = listAdapter.getView(i, null, listView);
             listItem.measure(desiredWidth, View.MeasureSpec.UNSPECIFIED);
             totalHeight += listItem.getMeasuredHeight();
@@ -454,7 +482,7 @@ public class Utils {
 
         ViewGroup.LayoutParams params = listView.getLayoutParams();
 
-        params.height = totalHeight + (10 * (listAdapter.getCount()/listView.getNumColumns() - 1)) +20;
+        params.height = totalHeight + (60 * (listAdapter.getCount()/2 - 1)) +25;
         listView.setLayoutParams(params);
         listView.requestLayout();
     }

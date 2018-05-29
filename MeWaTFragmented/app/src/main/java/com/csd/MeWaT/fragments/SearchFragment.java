@@ -488,8 +488,9 @@ public class SearchFragment extends BaseFragment{
                 }
                 if (listAdapterSongs.size()>0)ScrollSearchViewSongs.setVisibility(View.VISIBLE);
                 else ScrollSearchViewSongs.setVisibility(View.GONE);
-                Utils.setListViewHeightBasedOnChildren(song_listView);
                 adapterSong.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildren(song_listView);
+
 
 
             } else {
@@ -626,10 +627,11 @@ public class SearchFragment extends BaseFragment{
                     temp.put("url",albumResultList.get(i).getUrlImg());
                     listAdapterAlbums.add(temp);
                 }
-                Utils.setListViewHeightBasedOnChildren(album_listView);
+
                 if (listAdapterAlbums.size()>0)ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
                 else ScrollSearchViewAlbums.setVisibility(View.GONE);
                 adapterAlbum.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildrenSearch(album_listView);
             } else {
                 ScrollSearchViewAlbums.setVisibility(View.GONE);
                 if(numFailed++==4)
@@ -760,10 +762,11 @@ public class SearchFragment extends BaseFragment{
                     temp.put("userOwn",listaResultList.get(i).getUserOwner());
                     listAdapterLista.add(temp);
                 }
-                Utils.setListViewHeightBasedOnChildren(list_listView);
+
                 if (listAdapterLista.size()>0)ScrollSearchViewListas.setVisibility(View.VISIBLE);
                 else ScrollSearchViewListas.setVisibility(View.GONE);
                 adapterLista.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildren(list_listView);
             } else {
                 ScrollSearchViewListas.setVisibility(View.GONE);
                 if(numFailed++==4)
@@ -890,10 +893,11 @@ public class SearchFragment extends BaseFragment{
                     temp.put("user",userResultList.get(i));
                     listAdapterUser.add(temp);
                 }
-                Utils.setListViewHeightBasedOnChildren(user_listView);
+
                 if (listAdapterUser.size()>0)ScrollSearchViewUsers.setVisibility(View.VISIBLE);
                 else ScrollSearchViewUsers.setVisibility(View.GONE);
                 adapterUser.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildrenSearch(user_listView);
 
             } else {
                 ScrollSearchViewUsers.setVisibility(View.GONE);

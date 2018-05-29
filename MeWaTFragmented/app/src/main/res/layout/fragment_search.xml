@@ -189,7 +189,6 @@
                     android:horizontalSpacing="40dp"
                     android:numColumns="2"
                     android:layout_height="wrap_content" >
-
                 </GridView>
 
                 <TextView

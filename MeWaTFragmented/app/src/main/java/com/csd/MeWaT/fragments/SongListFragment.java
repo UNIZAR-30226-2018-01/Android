@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.utils.Album;
 import com.csd.MeWaT.utils.CustomAdapterSong;
 import com.csd.MeWaT.utils.DownloadSongImageTask;
@@ -154,6 +155,8 @@ public class SongListFragment extends BaseFragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 MainActivity.songsList = songsList;
                 MainActivity.songnumber = (int) l;
+                Intent player = new Intent(getActivity(),PlayerActivity.class);
+                getActivity().startActivity(player);
             }
         });
 
@@ -267,7 +270,7 @@ public class SongListFragment extends BaseFragment {
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("album", query);             //Añade parametros
+                        .appendQueryParameter("album", query.replace(" ","%20"));             //Añade parametros
                 String query = builder.build().getEncodedQuery();
 
                 OutputStream os = client.getOutputStream();
