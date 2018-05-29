@@ -37,6 +37,8 @@
                 <GridView
 
                     android:id="@+id/RecListView"
+                    android:isScrollContainer="false"
+                    android:verticalSpacing="15dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:columnWidth="10dp"
@@ -74,6 +76,8 @@
 
                 <GridView
                     android:id="@+id/TopSemListView"
+                    android:isScrollContainer="false"
+                    android:verticalSpacing="15dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:columnWidth="10dp"
@@ -112,6 +116,7 @@
 
                 <GridView
                     android:id="@+id/GenreListView"
+                    android:isScrollContainer="false"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:columnWidth="10dp"
