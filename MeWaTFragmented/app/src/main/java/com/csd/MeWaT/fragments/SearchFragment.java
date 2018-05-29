@@ -35,6 +35,7 @@ import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -339,6 +340,7 @@ public class SearchFragment extends BaseFragment{
 
             songResultList.clear();
             try {
+
                 url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionTitulo");
 
                 client = (HttpsURLConnection) url.openConnection();
@@ -384,6 +386,7 @@ public class SearchFragment extends BaseFragment{
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
+                client.disconnect();
 
                 client.disconnect();
                 if (!result.has("error")){
