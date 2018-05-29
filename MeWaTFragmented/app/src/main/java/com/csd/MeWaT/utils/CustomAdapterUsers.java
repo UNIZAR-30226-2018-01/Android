@@ -33,6 +33,10 @@ public class CustomAdapterUsers extends SimpleAdapter {
 
         return view;
     }
-
+    @Override
+    public int getCount()
+    {
+        return arrayList.size();
+    }
 
 }

@@ -30,7 +30,7 @@
             android:imeOptions="actionSend"
             android:inputType="textCapWords|textAutoCorrect"
             android:hint="@string/buscar"
-            android:gravity="left"
+            android:gravity="start"
             android:textSize="18sp" />
 
     </LinearLayout>
@@ -74,6 +74,7 @@
 
                 </ListView>
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/moreSongs"
                     android:layout_width="match_parent"
                     android:layout_height="15dp"
@@ -115,6 +116,7 @@
                 </GridView>
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/moreAlbums"
                     android:layout_width="match_parent"
                     android:layout_height="15dp"
@@ -149,6 +151,7 @@
                 </ListView>
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/moreLists"
                     android:layout_width="match_parent"
                     android:layout_height="15dp"
@@ -190,6 +193,7 @@
                 </GridView>
 
                 <TextView
+                    android:visibility="gone"
                     android:id="@+id/moreUsers"
                     android:layout_width="match_parent"
                     android:layout_height="15dp"

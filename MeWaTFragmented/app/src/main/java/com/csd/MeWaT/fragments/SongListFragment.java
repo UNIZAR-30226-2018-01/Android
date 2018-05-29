@@ -1,5 +1,7 @@
 package com.csd.MeWaT.fragments;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -9,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -40,6 +43,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -63,6 +67,7 @@ public class SongListFragment extends BaseFragment {
 
     private Album album = null;
     private Lista lista = null;
+    private String options;
     private ArrayList<Song> songsList = new ArrayList<>();
     private ArrayList<HashMap<String, String>> songsListData = new ArrayList<>();
 
@@ -70,6 +75,8 @@ public class SongListFragment extends BaseFragment {
     public static SongListFragment newInstanceListSongs(ArrayList<Song> instance) {
         Bundle args = new Bundle();
         args.putSerializable(ARGS_INSTANCE, instance);
+        fromlist = false;
+        fromalbum = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -79,6 +86,7 @@ public class SongListFragment extends BaseFragment {
         Bundle args = new Bundle();
         args.putSerializable(ARGS_INSTANCE, instance);
         fromalbum = true;
+        fromlist = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -88,6 +96,7 @@ public class SongListFragment extends BaseFragment {
         Bundle args = new Bundle();
         args.putSerializable(ARGS_INSTANCE, instance);
         fromlist = true;
+        fromalbum = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -113,8 +122,7 @@ public class SongListFragment extends BaseFragment {
         Bundle args = getArguments();
         if (args != null) {
             if (fromalbum) album = ((ArrayList<Album>) args.getSerializable(ARGS_INSTANCE)).get(0);
-            else if (fromlist)
-                lista = ((ArrayList<Lista>) args.getSerializable(ARGS_INSTANCE)).get(0);
+            else if (fromlist) lista = ((ArrayList<Lista>) args.getSerializable(ARGS_INSTANCE)).get(0);
             else songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
         }
 
@@ -126,6 +134,9 @@ public class SongListFragment extends BaseFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        final ArrayAdapter<String> arrayAdapter= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,new String []{"Compartir","Añadir a Lista"});
+
 
         // Adding menuItems to ListView
         adapter = new CustomAdapterSong(view.getContext(), songsListData,
@@ -142,6 +153,56 @@ public class SongListFragment extends BaseFragment {
                 MainActivity.songnumber = (int) l;
             }
         });
+
+        listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                final Integer l2 = (int)l;
+                AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
+                builderSingle.setTitle("Opciones");
+
+                builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        AlertDialog.Builder builderInner = new AlertDialog.Builder(getContext());
+
+                        options = arrayAdapter.getItem(which);
+
+                        builderInner.setTitle(options);
+                        builderInner.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        List<String> listas = new ArrayList<>();
+                        for(Lista ls : MainActivity.lists) listas.add(ls.getName());
+                        final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
+
+                        builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                new Add2List(l2).execute(arrayAdapter2.getItem(which));
+                            }
+                        });
+                        builderInner.show();
+                    }
+                });
+                builderSingle.show();
+
+                return false;
+            }
+        });
+
+
         // listening to single listitem click
 
         if (fromalbum) {
@@ -383,6 +444,7 @@ public class SongListFragment extends BaseFragment {
                                 )
                         );
                     }
+                    adapter.setArrayList(songsList);
                 } else {
                     if(!result.has("error")) noresult=true;
                     else return false;
@@ -410,12 +472,115 @@ public class SongListFragment extends BaseFragment {
                         temp.put("songArtist", songsList.get(i).getArtist());
                         songsListData.add(temp);
                     }
+
                     adapter.notifyDataSetChanged();
                 }else Toast.makeText(getActivity().getApplicationContext(), "Lista Vacia",
                         Toast.LENGTH_SHORT).show();
 
             } else {
                 Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class Add2List extends AsyncTask<String, Void, Boolean> {
+
+        private final Integer l;
+
+        Add2List(Integer index) {
+            l = index;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/AnyadirCancionALista");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("ruta", songsList.get(l).getUrl().replace("https://mewat1718.ddns.net","/usr/local/apache-tomcat-9.0.7/webapps"))
+                        .appendQueryParameter("nombreLista",params[0]);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Añadida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
                         Toast.LENGTH_SHORT).show();
 
             }

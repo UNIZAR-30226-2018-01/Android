@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class CustomAdapterAlbum extends SimpleAdapter {
     LayoutInflater inflater;
     Context context;
-    ArrayList<Album> arrayList;
+    ArrayList<Album> arrayList= new ArrayList<>();
 
     public CustomAdapterAlbum(Context context, ArrayList<HashMap<String, String>> data, int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
@@ -39,6 +39,10 @@ public class CustomAdapterAlbum extends SimpleAdapter {
 
         return view;
     }
-
+    @Override
+    public int getCount()
+    {
+        return arrayList.size();
+    }
 
 }

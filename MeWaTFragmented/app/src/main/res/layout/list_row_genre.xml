@@ -9,7 +9,11 @@
     <TextView
         android:id="@+id/GenreName"
         android:layout_gravity="center"
-        android:layout_margin="15dp"
-        android:layout_width="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_marginBottom="25dp"
+        android:text="Generos"
+        android:gravity="center_horizontal"
+        android:textColor="#FFFF"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 </LinearLayout>

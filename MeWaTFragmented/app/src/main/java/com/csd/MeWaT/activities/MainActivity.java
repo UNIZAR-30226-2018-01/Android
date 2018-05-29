@@ -27,12 +27,14 @@ import android.widget.TextView;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
+import com.csd.MeWaT.fragments.ListListFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.SongListFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
+import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
@@ -52,6 +54,7 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -116,6 +119,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     private FragmentHistory fragmentHistory;
 
     public static ArrayList<Song> favsSongs = new ArrayList<>();
+    public static ArrayList<Lista> lists = new ArrayList<>();
 
 
 
@@ -147,6 +151,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
 
         new SearchFavSongs().execute();
+        new SearchListByUser().execute();
 
 
         setContentView(R.layout.activity_main);
@@ -347,6 +352,8 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     private void switchTab(int position) {
         pos=position;
+        mNavController.clearStack();
+        Hola.clear();
         mNavController.switchTab(position);
         updateToolbarTitle(position);
     }
@@ -440,7 +447,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     }
 
-    public ArrayList<String> Hola = new ArrayList<>();
+    public static ArrayList<String> Hola = new ArrayList<>();
 
     @Override
     public void pushFragment(Fragment fragment) {
@@ -450,9 +457,10 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         }
     }
 
-    public void pushFragment(Fragment fragment,String title) {
+    @Override
+    public void pushFragment1(Fragment fragment,String Title){
         if (mNavController != null) {
-            Hola.add(title);
+            Hola.add(Title);
             mNavController.pushFragment(fragment);
         }
     }
@@ -639,6 +647,111 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         @Override
         protected void onPostExecute(final Boolean success) {
 
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous song search
+     */
+    public class SearchListByUser extends AsyncTask<String, Void, Boolean> {
+
+
+        SearchListByUser(){}
+
+        ArrayList<Lista> rubbish = new ArrayList<>();
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            rubbish.clear();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/MostrarListasReproduccion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("user", MainActivity.user)
+                        .appendQueryParameter("contrasenya", MainActivity.password);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("nombre");
+                    for(int i = 0; i<resultArray.length();i++){
+                        if(!resultArray.getString(i).equals("Favoritos"))rubbish.add(new Lista(resultArray.getString(i),MainActivity.user));
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                lists = rubbish;
+            } else {
+
+            }
         }
 
         @Override

@@ -3,6 +3,7 @@ package com.csd.MeWaT.fragments;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
@@ -117,7 +119,6 @@ public class ProfileFragment extends BaseFragment{
         followedButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Mis Seguidores");
                 new SearchTaskByUser().execute("VerSeguidores");
             }
         });
@@ -125,7 +126,7 @@ public class ProfileFragment extends BaseFragment{
         followingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Seguidos");
+
                 new SearchTaskByUser().execute("VerSeguidos");
 
             }
@@ -134,7 +135,7 @@ public class ProfileFragment extends BaseFragment{
         historyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Historial");
+
                 new SearchTaskBySong(null).execute("EscuchadasRecientemente");
 
             }
@@ -144,7 +145,9 @@ public class ProfileFragment extends BaseFragment{
             @Override
             public void onClick(View view) {
                 ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Favoritos");
-                new SearchTaskBySong("Favoritos").execute("VerLista");
+                ArrayList<Lista> arrayList = new ArrayList<>();
+                arrayList.add(new Lista("Favoritos",MainActivity.user));
+                mFragmentNavigation.pushFragment(SongListFragment.newInstanceList(arrayList));
             }
         });
 
@@ -176,6 +179,7 @@ public class ProfileFragment extends BaseFragment{
     public class SearchTaskByUser extends AsyncTask<String, Void, Boolean> {
 
         private ArrayList<String> userResultList;
+        private boolean seg;
 
         SearchTaskByUser() {
 
@@ -188,7 +192,7 @@ public class ProfileFragment extends BaseFragment{
             HttpsURLConnection client = null;
             InputStreamReader inputStream;
 
-
+            seg = params[0].equals("VerSeguidores");
             userResultList = new ArrayList<>();
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/"+params[0]);
@@ -262,13 +266,18 @@ public class ProfileFragment extends BaseFragment{
                     listAdapterUser.add(temp);
                 }
                 if (listAdapterUser.size()>0){
+                    if(seg)((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Seguidores");
+                    else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Siguiendo");
                     if(mFragmentNavigation != null) {
                         mFragmentNavigation.pushFragment(UserListFragment.newInstance(listAdapterUser));
                     }
                 }
             } else {
+                if(seg)Toast.makeText(getActivity().getApplicationContext(), "No tiene ningún Seguidor",Toast.LENGTH_SHORT).show();
+                else Toast.makeText(getActivity().getApplicationContext(), "No sigue a ningún Usuario",Toast.LENGTH_SHORT).show();
 
             }
+
         }
 
         @Override
@@ -311,19 +320,6 @@ public class ProfileFragment extends BaseFragment{
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
 
-                if(List != null) {
-                    Uri.Builder builder = new Uri.Builder()
-                            .appendQueryParameter("nombreLista", List)
-                            .appendQueryParameter("nombreCreadorLista", MainActivity.user);             //Añade parametros
-                    String query = builder.build().getEncodedQuery();
-
-                    OutputStream os = client.getOutputStream();
-                    BufferedWriter writer = new BufferedWriter(
-                            new OutputStreamWriter(os, "UTF-8"));
-                    writer.write(query);
-                    writer.flush();
-                    writer.close();
-                }
                 int responseCode = client.getResponseCode();
                 System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
             } catch (MalformedURLException e) {
@@ -364,6 +360,7 @@ public class ProfileFragment extends BaseFragment{
                                 )
                         );
                     }
+                    resultArray.get(0);
                 }else{
                     return false;
                 }
@@ -383,10 +380,12 @@ public class ProfileFragment extends BaseFragment{
 
             if (success) {
                 if(mFragmentNavigation != null) {
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Historial");
                     mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(songResultList));
                 }
-            } else {
-
+            }else{
+                Toast.makeText(getActivity().getApplicationContext(), "No se ha reproducido ninguna Cancion",
+                        Toast.LENGTH_SHORT).show();
             }
         }
 
@@ -470,6 +469,7 @@ public class ProfileFragment extends BaseFragment{
                     for(int i = 0; i<resultArray.length();i++){
                         if(!resultArray.getString(i).equals("Favoritos"))ListResultList.add(new Lista(resultArray.getString(i),MainActivity.user));
                     }
+                    MainActivity.lists = ListResultList;
                 }else{
                     return false;
                 }
@@ -489,6 +489,7 @@ public class ProfileFragment extends BaseFragment{
 
             if (success) {
                 if(mFragmentNavigation != null) {
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Mis Listas");
                     mFragmentNavigation.pushFragment(ListListFragment.newInstance(ListResultList));
                 }
             } else {

@@ -65,6 +65,7 @@ public class ListListFragment extends BaseFragment {
         args.putSerializable(ARGS_INSTANCE, instance);
         ListResultList = instance;
 
+        ListListAdapter.clear();
         for(Lista s: ListResultList){
             HashMap<String,String> temp =  new HashMap<>();
             temp.put("nombre",s.getName());
@@ -122,7 +123,7 @@ public class ListListFragment extends BaseFragment {
                 if(mFragmentNavigation != null) {
                     ArrayList<Lista> alb =  new ArrayList<>();
                     alb.add(ListResultList.get((int)l));
-                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceList(alb));
+                    mFragmentNavigation.pushFragment1(SongListFragment.newInstanceList(alb),"Mis Listas");
                 }
             }
         });

@@ -7,6 +7,12 @@
                 android:centerColor="#ff42959a"
                 android:endColor="#ff23729a"
                 android:angle="135"/>
+            <corners
+                android:bottomRightRadius="15dp"
+                android:bottomLeftRadius="15dp"
+                android:topLeftRadius="15dp"
+                android:topRightRadius="15dp"/>
         </shape>
+
     </item>
 </selector>
