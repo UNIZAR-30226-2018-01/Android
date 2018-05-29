@@ -1,13 +1,8 @@
 package com.csd.MeWaT.fragments;
 
-import android.content.ContentResolver;
-import android.content.Context;
 import android.content.Intent;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -142,8 +137,8 @@ public class UploadFragment extends BaseFragment{
         if (requestCode == Library.PICK_MUSIC) {
             if (resultCode == RESULT_OK){
 
-                FileDetail file;
-                file = getFileDetailFromUri(getActivity(),data.getData());
+                Utils.FileDetail file;
+                file = Utils.getFileDetailFromUri(getActivity(),data.getData());
                 String uri = Utils.getPath(getActivity(),data.getData());
                 names.add(file.fileName);
                 LS2U.add(uri);
@@ -153,64 +148,6 @@ public class UploadFragment extends BaseFragment{
         }
         else super.onActivityResult(requestCode,resultCode,data);
     }
-    /**
-     * Used to get file detail from uri.
-     * <p>
-     * 1. Used to get file detail (name & size) from uri.
-     * 2. Getting file details from uri is different for different uri scheme,
-     * 2.a. For "File Uri Scheme" - We will get file from uri & then get its details.
-     * 2.b. For "Content Uri Scheme" - We will get the file details by querying content resolver.
-     *
-     * @param uri Uri.
-     * @return file detail.
-     */
-    public static FileDetail getFileDetailFromUri(final Context context, final Uri uri) {
-        FileDetail fileDetail = null;
-        if (uri != null) {
-            fileDetail = new FileDetail();
-            // File Scheme.
-            if (ContentResolver.SCHEME_FILE.equals(uri.getScheme())) {
-                File file = new File(uri.getPath());
-                fileDetail.fileName = file.getName();
-                fileDetail.fileSize = file.length();
-            }
-            // Content Scheme.
-            else if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
-                Cursor returnCursor =
-                        context.getContentResolver().query(uri, null, null, null, null);
-                if (returnCursor != null && returnCursor.moveToFirst()) {
-                    int nameIndex = returnCursor.getColumnIndex(OpenableColumns.DISPLAY_NAME);
-                    int sizeIndex = returnCursor.getColumnIndex(OpenableColumns.SIZE);
-                    fileDetail.fileName = returnCursor.getString(nameIndex);
-                    fileDetail.fileSize = returnCursor.getLong(sizeIndex);
-                    returnCursor.close();
-                }
-            }
-        }
-        return fileDetail;
-    }
-    /**
-     * File Detail.
-     * <p>
-     * 1. Model used to hold file details.
-     */
-    public static class FileDetail {
-
-        // fileSize.
-        public String fileName;
-
-        // fileSize in bytes.
-        public long fileSize;
-
-        /**
-         * Constructor.
-         */
-        public FileDetail() {
-
-        }
-    }
-
-
 
 
     public class MusicList2Upload extends AsyncTask<Void, Void, Boolean> {
