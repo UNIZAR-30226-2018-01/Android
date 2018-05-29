@@ -1,6 +1,8 @@
 package com.csd.MeWaT.fragments;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -20,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.activities.LoginActivity;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.utils.CustomAdapterSong;
@@ -100,6 +103,7 @@ public class HomeFragment extends BaseFragment {
 
 
 
+    private Boolean logged = true;
 
 
     public static HomeFragment newInstance(int instance) {
@@ -283,6 +287,15 @@ public class HomeFragment extends BaseFragment {
                         RecentsAdapter.setArrayList(resultRecentsList);
                     }
                 }else{
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
 
@@ -400,6 +413,15 @@ public class HomeFragment extends BaseFragment {
                        resultGenreList.add(resultArray.getString(i));
                     }
                 }else{
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
 

@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
+    android:scrollbarStyle="outsideInset"
     android:clipToPadding="false"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
@@ -114,7 +115,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/guardar_contrasenya"
                 android:textStyle="bold" />
-        </LinearLayout>
+
 
         <Button
             android:id="@+id/btton_CloseSesion"
@@ -129,6 +130,7 @@
             android:textStyle="bold" />
 
         <LinearLayout
+            android:layout_marginTop="15dp"
             android:id="@+id/deleteLinear"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -156,10 +158,10 @@
                 android:layout_width="250dp"
                 android:layout_height="50dp"
                 android:layout_marginTop="8dp"
-                android:text="Borrar CUENTA USUARIO"
+                android:text="Borrar Cuenta"
                 android:textStyle="bold" />
         </LinearLayout>
-
+        </LinearLayout>
 
     </LinearLayout>
 </ScrollView>

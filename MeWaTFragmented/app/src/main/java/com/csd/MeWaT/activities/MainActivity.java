@@ -27,11 +27,9 @@ import android.widget.TextView;
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.fragments.BaseFragment;
 import com.csd.MeWaT.fragments.HomeFragment;
-import com.csd.MeWaT.fragments.ListListFragment;
 import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
-import com.csd.MeWaT.fragments.SongListFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Lista;
@@ -54,7 +52,6 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -118,8 +115,9 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
 
-    public static ArrayList<Song> favsSongs = new ArrayList<>();
+
     public static ArrayList<Lista> lists = new ArrayList<>();
+    public static ArrayList<String> followedUser = new ArrayList<>();
 
 
 
@@ -152,6 +150,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
         new SearchFavSongs().execute();
         new SearchListByUser().execute();
+        new getFollowingUsers().execute();
 
 
         setContentView(R.layout.activity_main);
@@ -758,5 +757,96 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         }
     }
 
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class getFollowingUsers extends AsyncTask<String, Void, Boolean> {
+
+
+        getFollowingUsers() {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            followedUser.clear();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/VerSeguidos");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+                    JSONArray resultArray = result.getJSONArray("listaDeSeguidos");
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        followedUser.add( jsObj.getString("nombreSeguido"));
+                    }
+                }else{
+                    return false;
+                }
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+
+            } else {
+
+            }
+
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
 
 }

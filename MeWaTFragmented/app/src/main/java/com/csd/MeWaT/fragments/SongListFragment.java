@@ -1,7 +1,10 @@
 package com.csd.MeWaT.fragments;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -316,7 +319,18 @@ public class SongListFragment extends BaseFragment {
                     adapter.setArrayList(songsList);
 
                 } else {
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -445,7 +459,20 @@ public class SongListFragment extends BaseFragment {
                     adapter.setArrayList(songsList);
                 } else {
                     if(!result.has("error")) noresult=true;
-                    else return false;
+                    else {
+                        if(result.has("error")){
+                            if(result.get("error").equals("Usuario no logeado")){
+                                SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                                sp.edit().clear().apply();
+
+                                Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                                getActivity().startActivity(LoginActivity);
+                                getActivity().finish();
+                            }
+                            return false;
+                        }
+                    }
                 }
 
 
@@ -557,7 +584,18 @@ public class SongListFragment extends BaseFragment {
                 if (!result.has("error")){
 
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 

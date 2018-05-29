@@ -1,7 +1,10 @@
 package com.csd.MeWaT.fragments;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -333,6 +336,15 @@ public class ListListFragment extends BaseFragment {
                         }
                     }
                 }else{
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
 

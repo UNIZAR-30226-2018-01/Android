@@ -78,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
 
 
 
-        SharedPreferences sp = getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences sp = getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
         if(sp.getBoolean("userAuthed",false)){
             Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
             MainActivity.putExtra("idSesion",sp.getString("idSesion",""));
@@ -319,7 +319,7 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
 
-            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences p = getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
             if (success) {
 
                 p.edit().putBoolean("userAuthed",true).apply();

@@ -15,13 +15,16 @@ import java.util.HashMap;
 public class CustomAdapterUsers extends SimpleAdapter {
     LayoutInflater inflater;
     Context context;
-    ArrayList<HashMap<String,String>> arrayList;
+    ArrayList<String> arrayList = new ArrayList<>();
 
     public CustomAdapterUsers(Context context, ArrayList<HashMap<String, String>> data, int resource, String[] from, int[] to) {
         super(context, data, resource, from, to);
-        arrayList = data;
         this.context = context;
         inflater.from(context);
+    }
+
+    public void setArrayList(ArrayList<String> arrayList) {
+        this.arrayList = arrayList;
     }
 
     @Override
@@ -29,7 +32,7 @@ public class CustomAdapterUsers extends SimpleAdapter {
         View view = super.getView(position, convertView, parent);
 
         ImageView picProfile = (ImageView) view.findViewById(R.id.ImgUser);
-        new DownloadUserImageTask(picProfile).execute("https://mewat1718.ddns.net/ps/images/"+arrayList.get(position).get("user")+".jpg");
+        new DownloadUserImageTask(picProfile).execute("https://mewat1718.ddns.net/ps/images/"+arrayList.get(position)+".jpg");
 
         return view;
     }

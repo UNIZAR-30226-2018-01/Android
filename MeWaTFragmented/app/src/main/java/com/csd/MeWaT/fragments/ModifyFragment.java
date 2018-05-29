@@ -16,6 +16,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.activities.LoginActivity;
 import com.csd.MeWaT.activities.MainActivity;
 import com.csd.MeWaT.utils.Utils;
 
@@ -63,13 +64,13 @@ public class ModifyFragment extends BaseFragment {
 
 
     @BindView(R.id.btton_CloseSesion)
-    Button closeSesion;
+    Button CloseSesion;
 
     @BindView(R.id.passDelete)
     EditText pasDelete;
 
     @BindView(R.id.btton_deleteUser)
-    Button deteleUser;
+    Button deleteUser;
 
     public static final int PICK_IMAGE = 8;
 
@@ -137,6 +138,29 @@ public class ModifyFragment extends BaseFragment {
                 startActivityForResult(chooserIntent, PICK_IMAGE);
             }
         });
+
+        CloseSesion.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
+
+                sp.edit().clear().apply();
+
+
+                Intent LoginActivity = new Intent( getActivity(), LoginActivity.class);
+                getActivity().startActivity(LoginActivity);
+                getActivity().finish();
+            }
+        });
+
+
+        deleteUser.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new DeleteTask(pasDelete.getText().toString()).execute();
+            }
+        });
         return view;
     }
 
@@ -202,7 +226,16 @@ public class ModifyFragment extends BaseFragment {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
-                if (result.has("error")){
+                if(result.has("error")){
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }else{
                     MainActivity.user=UserName;
@@ -298,7 +331,16 @@ public class ModifyFragment extends BaseFragment {
                 JSONObject result = new JSONObject(tokener);
 
                 client.disconnect();
-                if (result.has("error")){
+                if(result.has("error")){
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
             }catch (IOException e){
@@ -329,13 +371,10 @@ public class ModifyFragment extends BaseFragment {
     }
 
     public class DeleteTask extends AsyncTask<Void, Void, Boolean>{
-        private final String paswd;
-        private final String paswdRep;
+
         private final String oldPwsd;
 
-        DeleteTask(String oldpaswd, String pswd, String pswdRep){
-            paswd = pswd;
-            paswdRep = pswdRep;
+        DeleteTask(String oldpaswd){
             oldPwsd = oldpaswd;
         }
 
@@ -358,9 +397,7 @@ public class ModifyFragment extends BaseFragment {
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
-                        .appendQueryParameter("pass", oldPwsd)
-                        .appendQueryParameter("nuevaContrasenya", paswd)
-                        .appendQueryParameter("nuevaContrasenyaR", paswdRep);
+                        .appendQueryParameter("pass", oldPwsd);
                 String query = builder.build().getEncodedQuery();
 
                 OutputStream os = client.getOutputStream();
@@ -396,7 +433,17 @@ public class ModifyFragment extends BaseFragment {
                 JSONObject result = new JSONObject(tokener);
 
                 client.disconnect();
-                if (result.has("error")){
+
+                if(result.has("error")){
+                    if(result.get("error").equals("Usuario no logeado")){
+                        SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                        sp.edit().clear().apply();
+
+                        Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                        getActivity().startActivity(LoginActivity);
+                        getActivity().finish();
+                    }
                     return false;
                 }
             }catch (IOException e){
@@ -411,18 +458,20 @@ public class ModifyFragment extends BaseFragment {
         @Override
         protected void onPostExecute(Boolean success) {
             if (success){
-                Toast.makeText(getActivity().getApplicationContext(), "Password has been changed ", Toast.LENGTH_SHORT).show();
-                oldPasword.getText().clear();
-                pasText.getText().clear();
-                pasRepText.getText().clear();
+                Toast.makeText(getActivity().getApplicationContext(), "Account Successfully Deleted ", Toast.LENGTH_SHORT).show();
+
+                SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN",Context.MODE_PRIVATE);
+
+                sp.edit().clear().apply();
+
+                Intent LoginActivity = new Intent( getActivity(), LoginActivity.class);
+                getActivity().startActivity(LoginActivity);
+                getActivity().finish();
             }
             else {
                 Toast.makeText(getActivity().getApplicationContext(), "Sorry, something was wrong!", Toast.LENGTH_SHORT).show();
-                oldPasword.getText().clear();
-                pasText.getText().clear();
-                pasRepText.getText().clear();
-
             }
+            pasDelete.getText().clear();
         }
     }
 

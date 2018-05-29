@@ -1,5 +1,8 @@
 package com.csd.MeWaT.fragments;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -76,7 +79,7 @@ public class ProfileFragment extends BaseFragment{
 
     private ArrayList<Lista> ListResultList = new ArrayList<>();
 
-    private ArrayList<HashMap<String,String>> listAdapterUser;
+    private ArrayList<HashMap<String,String>> listAdapterUser = new ArrayList<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -233,15 +236,26 @@ public class ProfileFragment extends BaseFragment{
 
                 client.disconnect();
                 if (!result.has("error")){
-                    JSONArray resultArray = result.getJSONArray("listaDeSeguidores");
-                    String search = params[0].equals("VerSeguidores")?"nombreSeguidor":"nombreSeguido";
+                    JSONArray resultArray = result.getJSONArray( params[0].equals("VerSeguidores")?"listaDeSeguidores":"listaDeSeguidos");
+                    String search = params[0].equals("VerSeguidores")?"nombreSeguido":"nombreSeguido";
                     for(int i = 0; i<resultArray.length();i++){
                         JSONObject jsObj = resultArray.getJSONObject(i);
                         userResultList.add( jsObj.getString(search));
                     }
-
+                    if(params[0].equals("VerSeguidos"))MainActivity.followedUser=userResultList;
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -258,18 +272,20 @@ public class ProfileFragment extends BaseFragment{
         protected void onPostExecute(final Boolean success) {
 
             if (success) {
-                listAdapterUser.clear();
-                for(int i = 0; i<4 && i<userResultList.size();i++){
-                    HashMap<String,String> temp = new HashMap<>();
-                    temp.put("user",userResultList.get(i));
-                    listAdapterUser.add(temp);
-                }
-                if (listAdapterUser.size()>0){
-                    if(seg)((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Seguidores");
-                    else ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Siguiendo");
-                    if(mFragmentNavigation != null) {
-                        mFragmentNavigation.pushFragment(UserListFragment.newInstance(listAdapterUser));
+                if (userResultList.size()>0){
+                    if(seg){
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Seguidores");
+                        if(mFragmentNavigation != null) {
+                            mFragmentNavigation.pushFragment(UserListFragment.newInstance(userResultList));
+                        }
                     }
+                    else{
+                        if(mFragmentNavigation != null) {
+                            mFragmentNavigation.pushFragment(UserListFragment.newInstanceFollowing(userResultList));
+                        }
+                        ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Siguiendo");
+                    }
+
                 }
             } else {
                 if(seg)Toast.makeText(getActivity().getApplicationContext(), "No tiene ningún Seguidor",Toast.LENGTH_SHORT).show();
@@ -360,7 +376,18 @@ public class ProfileFragment extends BaseFragment{
                     }
                     resultArray.get(0);
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
@@ -468,7 +495,18 @@ public class ProfileFragment extends BaseFragment{
                     }
                     MainActivity.lists = ListResultList;
                 }else{
-                    return false;
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
                 }
 
 
