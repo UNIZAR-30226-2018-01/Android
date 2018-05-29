@@ -412,6 +412,7 @@ public class HomeFragment extends BaseFragment {
                     for(int i = 0; i<resultArray.length();i++){
                        resultGenreList.add(resultArray.getString(i));
                     }
+                    resultArray.get(0);
                 }else{
                     if(result.get("error").equals("Usuario no logeado")){
                         SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);

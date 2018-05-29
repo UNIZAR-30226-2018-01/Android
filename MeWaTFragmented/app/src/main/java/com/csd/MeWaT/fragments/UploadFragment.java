@@ -170,7 +170,7 @@ public class UploadFragment extends BaseFragment{
             String boundary = "*****";
             int bytesRead, bytesAvailable, bufferSize;
             byte[] buffer;
-            int maxBufferSize = 8 * 1024 * 1024;
+            int maxBufferSize = 1 * 1024 * 1024;
 
             try {
                 url = new URL("https://mewat1718.ddns.net/ps/SubirCanciones");
@@ -180,23 +180,29 @@ public class UploadFragment extends BaseFragment{
                 FileInputStream fileInputStream = new FileInputStream(file);
 
                 client = (HttpsURLConnection) url.openConnection();
-                client.setRequestMethod("POST");
+
+
                 client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
                 client.setDoInput(true); // Allow Inputs
                 client.setDoOutput(true); // Allow Outputs
                 client.setUseCaches(false); // Don't use a Cached Copy
-                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+                client.setRequestMethod("POST");
                 client.setRequestProperty("Connection", "Keep-Alive");
-                client.setRequestProperty("ENCTYPE", "multipart/form-data");
                 client.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
 
                 dos = new DataOutputStream(client.getOutputStream());
                 dos.writeBytes(twoHyphens + boundary + lineEnd);
-                dos.writeBytes("Content-Disposition: form-data; name=\"uploadedfile\";filename=\"" + name + "\"" + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"fichero\";filename=\"" + name + "\"" + lineEnd);
+                dos.writeBytes("Content-Type: " + "audio/mp3" + lineEnd);
+                dos.writeBytes("Content-Transfer-Encoding: binary" + lineEnd);
                 dos.writeBytes(lineEnd);
+
                 // create a buffer of maximum size
                 bytesAvailable = fileInputStream.available();
                 bufferSize = Math.min(bytesAvailable, maxBufferSize);
