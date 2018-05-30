@@ -288,7 +288,7 @@ public class SearchFragment extends BaseFragment{
                 });
                 builderSingle.show();
 
-                return false;
+                return true;
             }
         });
 

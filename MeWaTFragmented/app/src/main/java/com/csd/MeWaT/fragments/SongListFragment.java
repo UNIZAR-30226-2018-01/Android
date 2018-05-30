@@ -189,16 +189,28 @@ public class SongListFragment extends BaseFragment {
                             }
                         });
 
-                        List<String> listas = new ArrayList<>();
-                        for(Lista ls : MainActivity.lists) listas.add(ls.getName());
-                        final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
+                        if(which==0){
+                            List<String> users = new ArrayList<>();
+                            for(String s : MainActivity.followedUser) users.add(s);
+                            final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,users.toArray(new String[0]));
+                            builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //new ShareSong(l2).execute(arrayAdapter2.getItem(which));
+                                }
+                            });
+                        }else{
+                            List<String> listas = new ArrayList<>();
+                            for(Lista ls : MainActivity.lists) listas.add(ls.getName());
+                            final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
 
-                        builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                new Add2List(l2).execute(arrayAdapter2.getItem(which));
-                            }
-                        });
+                            builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    new Add2List(l2).execute(arrayAdapter2.getItem(which));
+                                }
+                            });
+                        }
                         builderInner.show();
                     }
                 });
