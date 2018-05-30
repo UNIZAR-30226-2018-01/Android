@@ -1,6 +1,8 @@
 package com.csd.MeWaT.utils;
 
-public class Lista {
+import java.io.Serializable;
+
+public class Lista implements Serializable {
 
     private String name;
     private String userOwner;

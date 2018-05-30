@@ -132,14 +132,14 @@ public class HomeFragment extends BaseFragment {
         ButterKnife.bind(this, view);
 
         RecentsAdapter = new CustomAdapterSong(view.getContext(), resultRecentsAdapter,R.layout.list_row_song,
-                new String[]{"title","artist"},
-                new int[]{R.id.songTitle,R.id.songArtist});
+                new String[]{"title"},
+                new int[]{R.id.songTitle});
         RecListView.setAdapter(RecentsAdapter);
 
 
         TopSemAdapter = new CustomAdapterSong(view.getContext(), resultTopSemAdapter,R.layout.list_row_song,
-                new String[]{"title","artist"},
-                new int[]{R.id.songTitle,R.id.songArtist});
+                new String[]{"title"},
+                new int[]{R.id.songTitle});
         TopSemListView.setAdapter(TopSemAdapter);
 
         GenreAdapter = new SimpleAdapter(view.getContext(), resultGenreAdapter,R.layout.list_row_genre,
@@ -181,12 +181,24 @@ public class HomeFragment extends BaseFragment {
             }
         });
 
+
+        TopSemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                MainActivity.songsList = resultTopSemList;
+                MainActivity.songnumber = (int) l;
+                Intent player = new Intent(getActivity(),PlayerActivity.class);
+                getActivity().startActivity(player);
+            }
+        });
+
         GenreListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
 
             }
         });
+
 
     }
 
@@ -318,25 +330,27 @@ public class HomeFragment extends BaseFragment {
                     for (int i = 0; i < 4 && i < resultTopSemList.size(); i++) {
                         HashMap<String, String> temp = new HashMap<String, String>();
                         temp.put("title", resultTopSemList.get(i).getTitle());
-                        temp.put("artist", resultTopSemList.get(i).getArtist());
                         resultTopSemAdapter.add(temp);
                     }
                     if (resultTopSemAdapter.size() > 0) TopSem.setVisibility(View.VISIBLE);
                     else TopSem.setVisibility(View.GONE);
                     Utils.setListViewHeightBasedOnChildren(TopSemListView);
                     TopSemAdapter.notifyDataSetChanged();
+                    if(resultTopSemList.size()>4)moreTopSem.setVisibility(View.VISIBLE);
+                    else moreTopSem.setVisibility(View.GONE);
                 }else{
                     resultRecentsAdapter.clear();
                     for (int i = 0; i < 4 && i < resultRecentsList.size(); i++) {
                         HashMap<String, String> temp = new HashMap<String, String>();
                         temp.put("title", resultRecentsList.get(i).getTitle());
-                        temp.put("artist", resultRecentsList.get(i).getArtist());
                         resultRecentsAdapter.add(temp);
                     }
                     if (resultRecentsAdapter.size() > 0) Recents.setVisibility(View.VISIBLE);
                     else Recents.setVisibility(View.GONE);
                     Utils.setListViewHeightBasedOnChildren(RecListView);
                     RecentsAdapter.notifyDataSetChanged();
+                    if(resultTopSemList.size()>4)moreRecents.setVisibility(View.VISIBLE);
+                    else moreRecents.setVisibility(View.GONE);
                 }
 
             } else {
@@ -446,10 +460,13 @@ public class HomeFragment extends BaseFragment {
                     temp.put("name",resultGenreList.get(i));
                     resultGenreAdapter.add(temp);
                 }
-                GenreAdapter.notifyDataSetChanged();
-                Utils.setListViewHeightBasedOnChildren(GenreListView);
+
                 if (resultGenreAdapter.size()>0)Genre.setVisibility(View.VISIBLE);
                 else Genre.setVisibility(View.GONE);
+                GenreAdapter.notifyDataSetChanged();
+                Utils.setListViewHeightBasedOnChildren(GenreListView);
+                if(resultGenreList.size()>4)moreGenre.setVisibility(View.VISIBLE);
+                else moreGenre.setVisibility(View.GONE);
 
             } else {
                 if (resultGenreAdapter.size()==0)Genre.setVisibility(View.GONE);

@@ -33,7 +33,7 @@ public class MusicService extends Service implements MediaPlayer.OnCompletionLis
 
     private ArrayList<Song> songsList = new ArrayList<>();
     private static Integer songnumber=0,isRepeat=0;
-    private static Boolean isShuffle,resumed;
+    private static Boolean isShuffle=false,resumed=false;
 
     private WeakReference<ImageButton> btnPlay;
     private WeakReference<TextView> SongTitle;
