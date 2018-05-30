@@ -1,30 +1,27 @@
 package com.csd.MeWaT.fragments;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.GridView;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
-import com.csd.MeWaT.activities.LoginActivity;
 import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.activities.PlayerActivity;
 import com.csd.MeWaT.utils.CustomAdapterSong;
 import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
@@ -41,12 +38,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -104,7 +101,7 @@ public class HomeFragment extends BaseFragment {
 
 
     private Boolean logged = true;
-
+    String options;
 
     public static HomeFragment newInstance(int instance) {
         Bundle args = new Bundle();
@@ -168,34 +165,83 @@ public class HomeFragment extends BaseFragment {
         }
 
         new SearchSongsBy().execute("EscuchadasRecientemente");
-        new SearchSongsBy().execute("TopSemanal");
+        //new SearchSongsBy().execute("TopSemanal");
         new SearchGenre().execute();
 
         RecListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MainActivity.songsList = resultRecentsList;
-                MainActivity.songnumber = (int) l;
-                Intent player = new Intent(getActivity(),PlayerActivity.class);
-                getActivity().startActivity(player);
+                MainActivity.setSongsListAndStart(resultRecentsList,(int) l);
+                MainActivity.playSong((int)l);
             }
         });
+
+
+
+        RecListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                dialog(false,l);
+                return true;
+            }
+        });
+
 
 
         TopSemListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MainActivity.songsList = resultTopSemList;
-                MainActivity.songnumber = (int) l;
-                Intent player = new Intent(getActivity(),PlayerActivity.class);
-                getActivity().startActivity(player);
+                MainActivity.setSongsListAndStart(resultTopSemList,(int) l);
+                MainActivity.playSong((int)l);
+                //Intent player = new Intent(getActivity(),PlayerActivity.class);
+                //getActivity().startActivity(player);
             }
         });
+
+        TopSemListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
+                dialog(true,l);
+                return true;
+            }
+        });
+
 
         GenreListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                ArrayList<String> res = new ArrayList<>();
+                res.add(resultGenreList.get((int)l));
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceGenre(res));
+                }
+            }
+        });
 
+        moreGenre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(GenreListFragment.newInstance(resultGenreList));
+                }
+            }
+        });
+
+        moreRecents.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(resultRecentsList));
+                }
+            }
+        });
+
+        moreTopSem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(resultTopSemList));
+                }
             }
         });
 
@@ -207,7 +253,63 @@ public class HomeFragment extends BaseFragment {
         super.onDestroyView();
     }
 
+    public void dialog(boolean topsem, long l){
+        final ArrayAdapter<String> arrayAdapter= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,new String []{"Compartir","Añadir a Lista"});
+        final Integer l2 = (int)l;
+        AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
+        builderSingle.setTitle("Opciones");
 
+        builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builderSingle.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                AlertDialog.Builder builderInner = new AlertDialog.Builder(getContext());
+
+                options = arrayAdapter.getItem(which);
+
+                builderInner.setTitle(options);
+                builderInner.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+
+                if(which==0){
+                    new MainActivity.getFollowingUsers().execute();
+                    List<String> users = new ArrayList<>();
+                    for(String s : MainActivity.followedUser) users.add(s);
+                    final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,users.toArray(new String[0]));
+                    builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            new ShareSong(l2,false).execute(arrayAdapter2.getItem(which));
+                        }
+                    });
+                }else{
+                    List<String> listas = new ArrayList<>();
+                    for(Lista ls : MainActivity.lists) listas.add(ls.getName());
+                    final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
+
+                    builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            new Add2List(l2,false).execute(arrayAdapter2.getItem(which));
+                        }
+                    });
+                }
+                builderInner.show();
+            }
+        });
+        builderSingle.show();
+
+    }
 
     public class SearchSongsBy extends AsyncTask<String, Void, Boolean> {
 
@@ -266,9 +368,9 @@ public class HomeFragment extends BaseFragment {
                     if(params[0].equals("TopSemanal")){
                         tipo = true;
                         resultTopSemList.clear();
-                        JSONArray resultArray = result.getJSONArray("canciones");
-                        for(int i = 0; i<resultArray.length();i++){
-                            JSONObject jsObj = resultArray.getJSONObject(i);
+                        JSONArray resultArraya = result.getJSONArray("canciones");
+                        for(int i = 0; i<resultArraya.length();i++){
+                            JSONObject jsObj = resultArraya.getJSONObject(i);
                             resultTopSemList.add(new Song(jsObj.getString("tituloCancion"),
                                             jsObj.getString("nombreAlbum"),
                                             jsObj.getString("nombreArtista"),
@@ -278,14 +380,14 @@ public class HomeFragment extends BaseFragment {
                                     )
                             );
                         }
-                        resultArray.get(0);
+                        resultArraya.get(0);
                         TopSemAdapter.setArrayList(resultTopSemList);
 
                     }else{
                         resultRecentsList.clear();
-                        JSONArray resultArray = result.getJSONArray("canciones");
-                        for(int i = 0; i<resultArray.length();i++){
-                            JSONObject jsObj = resultArray.getJSONObject(i);
+                        JSONArray resultArrayb = result.getJSONArray("canciones");
+                        for(int i = 0; i<resultArrayb.length();i++){
+                            JSONObject jsObj = resultArrayb.getJSONObject(i);
                             resultRecentsList.add(new Song(jsObj.getString("tituloCancion"),
                                             jsObj.getString("nombreAlbum"),
                                             jsObj.getString("nombreArtista"),
@@ -295,7 +397,7 @@ public class HomeFragment extends BaseFragment {
                                     )
                             );
                         }
-                        resultArray.get(0);
+                        resultArrayb.get(0);
                         RecentsAdapter.setArrayList(resultRecentsList);
                     }
                 }else{
@@ -340,7 +442,7 @@ public class HomeFragment extends BaseFragment {
                     else moreTopSem.setVisibility(View.GONE);
                 }else{
                     resultRecentsAdapter.clear();
-                    for (int i = 0; i < 4 && i < resultRecentsList.size(); i++) {
+                    for (int i = 0; i < 6 && i < resultRecentsList.size(); i++) {
                         HashMap<String, String> temp = new HashMap<String, String>();
                         temp.put("title", resultRecentsList.get(i).getTitle());
                         resultRecentsAdapter.add(temp);
@@ -349,7 +451,7 @@ public class HomeFragment extends BaseFragment {
                     else Recents.setVisibility(View.GONE);
                     Utils.setListViewHeightBasedOnChildren(RecListView);
                     RecentsAdapter.notifyDataSetChanged();
-                    if(resultTopSemList.size()>4)moreRecents.setVisibility(View.VISIBLE);
+                    if(resultRecentsList.size()>4)moreRecents.setVisibility(View.VISIBLE);
                     else moreRecents.setVisibility(View.GONE);
                 }
 
@@ -479,4 +581,247 @@ public class HomeFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class Add2List extends AsyncTask<String, Void, Boolean> {
+
+        private final Integer l;
+        private boolean topsem;
+
+        Add2List(Integer index, boolean topsem) {
+            l = index;
+            this.topsem=topsem;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/AnyadirCancionALista");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                String query;
+                if(topsem) {
+                    Uri.Builder builder = new Uri.Builder()
+                            .appendQueryParameter("ruta", resultTopSemList.get(l).getUrl().replace("https://mewat1718.ddns.net", "/usr/local/apache-tomcat-9.0.7/webapps"))
+                            .appendQueryParameter("nombreLista", params[0]);             //Añade parametros
+                     query = builder.build().getEncodedQuery();
+                }else{
+                    Uri.Builder builder = new Uri.Builder()
+                            .appendQueryParameter("ruta", resultRecentsList.get(l).getUrl().replace("https://mewat1718.ddns.net", "/usr/local/apache-tomcat-9.0.7/webapps"))
+                            .appendQueryParameter("nombreLista", params[0]);             //Añade parametros
+                    query = builder.build().getEncodedQuery();
+                }
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Añadida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class ShareSong extends AsyncTask<String, Void, Boolean> {
+
+        private final Integer l;
+        private Boolean topsem;
+
+        ShareSong(Integer index,Boolean topsem) {
+            l = index;
+            this.topsem = topsem;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/CompartirCancion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                String query;
+                if(topsem) {
+                    Uri.Builder builder = new Uri.Builder()
+
+                            .appendQueryParameter("ruta", resultTopSemList.get(l).getUrl().replace("https://mewat1718.ddns.net", "/usr/local/apache-tomcat-9.0.7/webapps"))
+                            .appendQueryParameter("usuarioDestino", params[0]);             //Añade parametros
+                    query = builder.build().getEncodedQuery();
+                }else{
+                    Uri.Builder builder = new Uri.Builder()
+
+                            .appendQueryParameter("ruta", resultRecentsList.get(l).getUrl().replace("https://mewat1718.ddns.net", "/usr/local/apache-tomcat-9.0.7/webapps"))
+                            .appendQueryParameter("usuarioDestino", params[0]);             //Añade parametros
+                    query = builder.build().getEncodedQuery();
+                }
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Compartida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
 }

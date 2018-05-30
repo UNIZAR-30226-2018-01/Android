@@ -30,8 +30,8 @@
     android:id="@+id/fragment_song_list_listView"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:divider="#242424"
+    android:divider="@color/blue"
     android:dividerHeight="1dp"
-    android:listSelector="@drawable/list_selector" />
+    android:listSelector="@color/blue" />
 
 </LinearLayout>

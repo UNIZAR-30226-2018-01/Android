@@ -88,7 +88,7 @@ public class CustomAdapterSong extends SimpleAdapter {
     @Override
     public int getCount()
     {
-        return arrayList.size();
+        return arrayList.size()-1;
     }
 
     /**

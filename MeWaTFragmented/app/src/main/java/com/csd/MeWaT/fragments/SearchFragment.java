@@ -98,6 +98,7 @@ public class SearchFragment extends BaseFragment{
     @BindView(R.id.moreSongs)
     TextView moreSongs;
 
+
     private static ArrayList<Song> songResultList = new ArrayList<>();
     private static ArrayList<HashMap<String,String>> listAdapterSongs =new ArrayList<HashMap<String,String>>();
     CustomAdapterSong adapterSong;
@@ -165,20 +166,20 @@ public class SearchFragment extends BaseFragment{
     public void onViewCreated(final View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        final ArrayAdapter<String> arrayAdapter= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,new String []{"Compartir","Añadir a Lista"});
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(getContext(), R.layout.dialog_layout, new String[]{"Compartir", "Añadir a Lista"});
 
 
-        if(!adapterUser.isEmpty()){
+        if (!adapterUser.isEmpty()) {
             ScrollSearchViewUsers.setVisibility(View.VISIBLE);
         }
-        if(!adapterAlbum.isEmpty()){
+        if (!adapterAlbum.isEmpty()) {
             adapterAlbum.setArrayList(albumResultList);
             ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
         }
-        if(!adapterLista.isEmpty()){
+        if (!adapterLista.isEmpty()) {
             ScrollSearchViewListas.setVisibility(View.VISIBLE);
         }
-        if(!adapterSong.isEmpty()){
+        if (!adapterSong.isEmpty()) {
             adapterSong.setArrayList(songResultList);
             ScrollSearchViewSongs.setVisibility(View.VISIBLE);
         }
@@ -189,8 +190,8 @@ public class SearchFragment extends BaseFragment{
                 // get the query from the textView
                 String query = search_text.getText().toString();
                 // if the query isnt empty, then search fro anything in the DB
-                if (!query.trim().isEmpty()){
-                    numFailed =0;
+                if (!query.trim().isEmpty()) {
+                    numFailed = 0;
                     SearchTaskBySong searchTaskBySong = new SearchTaskBySong(query.trim());
                     searchTaskBySong.execute();
                     SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(query.trim());
@@ -211,9 +212,9 @@ public class SearchFragment extends BaseFragment{
                 if (i == EditorInfo.IME_ACTION_SEND) {
                     String query = search_text.getText().toString();
                     // if the query isnt empty, then search fro anything in the DB
-                    if (!query.trim().isEmpty()){
+                    if (!query.trim().isEmpty()) {
 
-                        numFailed =0;
+                        numFailed = 0;
                         SearchTaskBySong searchTaskBySong = new SearchTaskBySong(query.trim());
                         searchTaskBySong.execute();
                         SearchTaskByAlbum searchTaskByAlbum = new SearchTaskByAlbum(query.trim());
@@ -235,10 +236,7 @@ public class SearchFragment extends BaseFragment{
         song_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MainActivity.songsList = songResultList;
-                MainActivity.songnumber = (int) l;
-                Intent player = new Intent(getActivity(),PlayerActivity.class);
-                getActivity().startActivity(player);
+                MainActivity.setSongsListAndStart(songResultList,(int) l);
 
             }
         });
@@ -247,7 +245,7 @@ public class SearchFragment extends BaseFragment{
         song_listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
-                final Integer l2 = (int)l;
+                final Integer l2 = (int) l;
                 AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
                 builderSingle.setTitle("Opciones");
 
@@ -273,16 +271,29 @@ public class SearchFragment extends BaseFragment{
                             }
                         });
 
-                        List<String> listas = new ArrayList<>();
-                        for(Lista ls : MainActivity.lists) listas.add(ls.getName());
-                        final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,listas.toArray(new String[0]));
+                        if (which == 0) {
+                            new MainActivity.getFollowingUsers().execute();
+                            List<String> users = new ArrayList<>();
+                            for (String s : MainActivity.followedUser) users.add(s);
+                            final ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(getContext(), R.layout.dialog_layout, users.toArray(new String[0]));
+                            builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    new ShareSong(l2).execute(arrayAdapter2.getItem(which));
+                                }
+                            });
+                        } else {
+                            List<String> listas = new ArrayList<>();
+                            for (Lista ls : MainActivity.lists) listas.add(ls.getName());
+                            final ArrayAdapter<String> arrayAdapter2 = new ArrayAdapter<>(getContext(), R.layout.dialog_layout, listas.toArray(new String[0]));
 
-                        builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                new Add2List(l2).execute(arrayAdapter2.getItem(which));
-                            }
-                        });
+                            builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    new Add2List(l2).execute(arrayAdapter2.getItem(which));
+                                }
+                            });
+                        }
                         builderInner.show();
                     }
                 });
@@ -296,12 +307,12 @@ public class SearchFragment extends BaseFragment{
             @Override
             public boolean onItemLongClick(AdapterView<?> adapterView, View view, int i, long l) {
 
-                final int l2 = (int)l;
+                final int l2 = (int) l;
 
                 AlertDialog.Builder builderSingle = new AlertDialog.Builder(getContext());
                 builderSingle.setTitle("Seguir");
 
-                String option="Seguir";
+                String option = "Seguir";
 
                 builderSingle.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
                     @Override
@@ -310,21 +321,21 @@ public class SearchFragment extends BaseFragment{
                     }
                 });
 
-                for(String s : MainActivity.followedUser) {
+                for (String s : MainActivity.followedUser) {
                     if (s.equals(userResultList.get((int) l))) option = "Dejar de Seguir";
                 }
-                if(option.equals("Seguir")){
+                if (option.equals("Seguir")) {
                     builderSingle.setPositiveButton(option, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            new FollowUser("SeguirUsuario",userResultList.get(l2)).execute();
+                            new FollowUser("SeguirUsuario", userResultList.get(l2)).execute();
                         }
                     });
-                }else{
+                } else {
                     builderSingle.setPositiveButton(option, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            new FollowUser("DejarDeSeguirUsuario",userResultList.get(l2)).execute();
+                            new FollowUser("DejarDeSeguirUsuario", userResultList.get(l2)).execute();
                         }
                     });
                 }
@@ -340,9 +351,9 @@ public class SearchFragment extends BaseFragment{
         album_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                if(mFragmentNavigation != null) {
-                    ArrayList<Album> alb =  new ArrayList<>();
-                    alb.add(albumResultList.get((int)l));
+                if (mFragmentNavigation != null) {
+                    ArrayList<Album> alb = new ArrayList<>();
+                    alb.add(albumResultList.get((int) l));
                     mFragmentNavigation.pushFragment(SongListFragment.newInstanceAlbum(alb));
                 }
             }
@@ -351,14 +362,19 @@ public class SearchFragment extends BaseFragment{
         list_listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+                if (mFragmentNavigation != null) {
+                    ArrayList<Lista> list = new ArrayList<>();
+                    list.add(listaResultList.get((int) l));
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceList(list));
+                }
             }
         });
 
         moreSongs.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(mFragmentNavigation != null) {
+                if (mFragmentNavigation != null) {
+
                     mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(songResultList));
                 }
             }
@@ -631,7 +647,7 @@ public class SearchFragment extends BaseFragment{
                 if (listAdapterAlbums.size()>0)ScrollSearchViewAlbums.setVisibility(View.VISIBLE);
                 else ScrollSearchViewAlbums.setVisibility(View.GONE);
                 adapterAlbum.notifyDataSetChanged();
-                Utils.setListViewHeightBasedOnChildrenSearch(album_listView);
+                Utils.setListViewHeightBasedOnChildren(album_listView);
             } else {
                 ScrollSearchViewAlbums.setVisibility(View.GONE);
                 if(numFailed++==4)
@@ -1147,5 +1163,121 @@ public class SearchFragment extends BaseFragment{
 
         }
     }
+
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class ShareSong extends AsyncTask<String, Void, Boolean> {
+
+        private final Integer l;
+
+        ShareSong(Integer index) {
+            l = index;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/CompartirCancion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("ruta", songResultList.get(l).getUrl().replace("https://mewat1718.ddns.net","/usr/local/apache-tomcat-9.0.7/webapps"))
+                        .appendQueryParameter("usuarioDestino",params[0]);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Compartida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+
+
 
 }

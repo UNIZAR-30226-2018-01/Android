@@ -67,10 +67,11 @@ public class SongListFragment extends BaseFragment {
 
 
     CustomAdapterSong adapter;
-    private static boolean fromalbum = false, fromlist = false;
+    private static boolean fromalbum = false, fromlist = false, fromgenre = false;
 
     private Album album = null;
     private Lista lista = null;
+    private String genre = null;
     private String options;
     private ArrayList<Song> songsList = new ArrayList<>();
     private ArrayList<HashMap<String, String>> songsListData = new ArrayList<>();
@@ -81,6 +82,7 @@ public class SongListFragment extends BaseFragment {
         args.putSerializable(ARGS_INSTANCE, instance);
         fromlist = false;
         fromalbum = false;
+        fromgenre = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -91,6 +93,7 @@ public class SongListFragment extends BaseFragment {
         args.putSerializable(ARGS_INSTANCE, instance);
         fromalbum = true;
         fromlist = false;
+        fromgenre = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
@@ -101,10 +104,23 @@ public class SongListFragment extends BaseFragment {
         args.putSerializable(ARGS_INSTANCE, instance);
         fromlist = true;
         fromalbum = false;
+        fromgenre = false;
         SongListFragment fragment = new SongListFragment();
         fragment.setArguments(args);
         return fragment;
     }
+
+    public static SongListFragment newInstanceGenre(ArrayList<String> instance) {
+        Bundle args = new Bundle();
+        args.putSerializable(ARGS_INSTANCE, instance);
+        fromlist = false;
+        fromalbum = false;
+        fromgenre = true;
+        SongListFragment fragment = new SongListFragment();
+        fragment.setArguments(args);
+        return fragment;
+    }
+
 
 
     @Override
@@ -127,10 +143,9 @@ public class SongListFragment extends BaseFragment {
         if (args != null) {
             if (fromalbum) album = ((ArrayList<Album>) args.getSerializable(ARGS_INSTANCE)).get(0);
             else if (fromlist) lista = ((ArrayList<Lista>) args.getSerializable(ARGS_INSTANCE)).get(0);
-            else songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
+            else if (fromgenre) genre = ((ArrayList<String>) args.getSerializable(ARGS_INSTANCE)).get(0);
+                else songsList = (ArrayList<Song>) args.getSerializable(ARGS_INSTANCE);
         }
-
-
         return view;
     }
 
@@ -153,10 +168,7 @@ public class SongListFragment extends BaseFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                MainActivity.songsList = songsList;
-                MainActivity.songnumber = (int) l;
-                Intent player = new Intent(getActivity(),PlayerActivity.class);
-                getActivity().startActivity(player);
+                MainActivity.setSongsListAndStart(songsList,(int) l);
             }
         });
 
@@ -190,13 +202,14 @@ public class SongListFragment extends BaseFragment {
                         });
 
                         if(which==0){
+                            new MainActivity.getFollowingUsers().execute();
                             List<String> users = new ArrayList<>();
                             for(String s : MainActivity.followedUser) users.add(s);
                             final ArrayAdapter<String> arrayAdapter2= new ArrayAdapter<>(getContext(),R.layout.dialog_layout,users.toArray(new String[0]));
                             builderInner.setAdapter(arrayAdapter2, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    //new ShareSong(l2).execute(arrayAdapter2.getItem(which));
+                                    new ShareSong(l2).execute(arrayAdapter2.getItem(which));
                                 }
                             });
                         }else{
@@ -216,7 +229,7 @@ public class SongListFragment extends BaseFragment {
                 });
                 builderSingle.show();
 
-                return false;
+                return true;
             }
         });
 
@@ -233,7 +246,10 @@ public class SongListFragment extends BaseFragment {
 
             ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(lista.getName());
             new SearchTaskBySong(lista.getName()).execute("VerLista");
-        } else {
+        } else if (fromgenre){
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(genre);
+            new SearchSongsByGenre(genre).execute();
+        } else{
 
             for (int i = 0; i < songsList.size(); i++) {
                 // creating new HashMap
@@ -331,6 +347,137 @@ public class SongListFragment extends BaseFragment {
                                 )
                         );
                     }
+                    resultArray.get(0);
+                    adapter.setArrayList(songsList);
+                } else {
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            } catch (IOException e) {
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                songsListData.clear();
+                for (int i = 0; i < 4 && i < songsList.size(); i++) {
+                    HashMap<String, String> temp = new HashMap<String, String>();
+                    temp.put("songTitle", songsList.get(i).getTitle());
+                    temp.put("songArtist", songsList.get(i).getArtist());
+                    songsListData.add(temp);
+                }
+                adapter.notifyDataSetChanged();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    public class SearchSongsByGenre extends AsyncTask<Void, Void, Boolean> {
+
+        private final String query;
+
+        SearchSongsByGenre(String txt) {
+            query = txt;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            songsList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/BuscarCancionGenero");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("genero", query.replace(" ","%20"));             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " + url + "--" + responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            } catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")) {
+
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for (int i = 0; i < resultArray.length(); i++) {
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        songsList.add(new Song(jsObj.getString("tituloCancion"),
+                                        jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
+                                        jsObj.getString("genero"),
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps", "https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..", "https://mewat1718.ddns.net")
+                                )
+                        );
+                    }
+                    resultArray.get(0);
                     adapter.setArrayList(songsList);
 
                 } else {
@@ -363,7 +510,7 @@ public class SongListFragment extends BaseFragment {
 
             if (success) {
                 songsListData.clear();
-                for (int i = 0; i < 4 && i < songsList.size(); i++) {
+                for (int i = 0; i < songsList.size(); i++) {
                     HashMap<String, String> temp = new HashMap<String, String>();
                     temp.put("songTitle", songsList.get(i).getTitle());
                     temp.put("songArtist", songsList.get(i).getArtist());
@@ -471,6 +618,7 @@ public class SongListFragment extends BaseFragment {
                                 )
                         );
                     }
+                    resultArray.get(0);
                     adapter.setArrayList(songsList);
                 } else {
                     if(!result.has("error")) noresult=true;
@@ -530,6 +678,117 @@ public class SongListFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class ShareSong extends AsyncTask<String, Void, Boolean> {
+
+        private final Integer l;
+
+        ShareSong(Integer index) {
+            l = index;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/CompartirCancion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("ruta", songsList.get(l).getUrl().replace("https://mewat1718.ddns.net","/usr/local/apache-tomcat-9.0.7/webapps"))
+                        .appendQueryParameter("usuarioDestino",params[0]);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    if(result.has("error")){
+                        if(result.get("error").equals("Usuario no logeado")){
+                            SharedPreferences sp = getActivity().getSharedPreferences("USER_LOGIN", Context.MODE_PRIVATE);
+
+                            sp.edit().clear().apply();
+
+                            Intent LoginActivity = new Intent( getActivity(), com.csd.MeWaT.activities.LoginActivity.class);
+                            getActivity().startActivity(LoginActivity);
+                            getActivity().finish();
+                        }
+                        return false;
+                    }
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                Toast.makeText(getActivity().getApplicationContext(), "Compartida Correctamente",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity().getApplicationContext(), "Algo ha ido mal",
+                        Toast.LENGTH_SHORT).show();
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
     /**
      * Represents an asynchronous album search task
      */
@@ -641,5 +900,6 @@ public class SongListFragment extends BaseFragment {
 
         }
     }
+
 
 }

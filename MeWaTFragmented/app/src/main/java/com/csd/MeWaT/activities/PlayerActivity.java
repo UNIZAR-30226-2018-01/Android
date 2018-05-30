@@ -79,7 +79,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
 
         // Mediaplayer
-        mp = new MediaPlayer();
+        mp = MainActivity.mp;
 
         lastindex = MainActivity.songnumber;
         // Getting all songs list
@@ -104,13 +104,22 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
 
-        if(!mp.isPlaying()) btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
-        else btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+        if(!mp.isPlaying()){
+            btnPlay.setImageResource(R.drawable.ic_play_circle_filled_black_24dp);
+            songTitleLabel.setText(songsList.get(lastindex).getTitle());
+            songArtistLabel.setText(songsList.get(lastindex).getArtist());
+            songAlbumLabel.setText(songsList.get(lastindex).getAlbum());
 
-        btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
-        btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
-        btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
-        btnPlaylist.setImageResource(R.drawable.ic_queue_music_black_24dp);
+        }
+        else {
+            btnPlay.setImageResource(R.drawable.ic_pause_circle_filled_black_24dp);
+            btnShuffle.setImageResource(R.drawable.ic_shuffle_black_24dp);
+            btnNext.setImageResource(R.drawable.ic_skip_next_black_24dp);
+            btnPrevious.setImageResource(R.drawable.ic_skip_previous_black_24dp);
+            btnPlaylist.setImageResource(R.drawable.ic_queue_music_black_24dp);
+        }
+
+
 
 
         utils = new Utils();

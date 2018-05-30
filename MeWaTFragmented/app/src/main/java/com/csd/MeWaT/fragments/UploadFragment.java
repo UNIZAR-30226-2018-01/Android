@@ -101,8 +101,8 @@ public class UploadFragment extends BaseFragment{
         confirmButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for(int i = 0; i< names.size();i++) {
-                    MusicList2Upload m2u = new MusicList2Upload(names.get(i),LS2U.get(i));
+                for(int i = names.size()-1; i>=0;i--) {
+                    MusicList2Upload m2u = new MusicList2Upload(names.get(i),LS2U.get(i),i);
                     m2u.execute((Void) null);
                 }
             }
@@ -153,10 +153,12 @@ public class UploadFragment extends BaseFragment{
     public class MusicList2Upload extends AsyncTask<Void, Void, Boolean> {
 
         private final String name,uri;
+        private final int i;
 
-        MusicList2Upload(String name, String uri){
+        MusicList2Upload(String name, String uri, Integer i){
             this.name = name;
             this.uri = uri;
+            this.i = i;
         }
 
         @Override
@@ -276,8 +278,8 @@ public class UploadFragment extends BaseFragment{
             HashMap<String,String> temp = new HashMap<String,String>();
 
             if (success) {
-                LS2U.clear();
-                names.clear();
+                LS2U.remove(i);
+                names.remove(i);
                 adapter.notifyDataSetChanged();
             }
             else{

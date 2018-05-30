@@ -8,16 +8,19 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.LoginActivity;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.utils.DownloadUserImageTask;
 import com.csd.MeWaT.utils.Utils;
 
 import org.apache.http.conn.ssl.SSLSocketFactory;
@@ -27,6 +30,9 @@ import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -34,6 +40,7 @@ import java.io.OutputStreamWriter;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.HashMap;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -54,6 +61,8 @@ public class ModifyFragment extends BaseFragment {
 
     @BindView(R.id.userChange)
     EditText userText;
+    @BindView(R.id.icon_image)
+    ImageView user_image;
     @BindView(R.id.oldPswd) EditText oldPasword;
     @BindView(R.id.pswdChange) EditText pasText;
     @BindView(R.id.pswdChangeRep) EditText pasRepText;
@@ -84,6 +93,7 @@ public class ModifyFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_edit_profile, container, false);
         ButterKnife.bind(this, view);
+        new DownloadUserImageTask(user_image).execute("https://mewat1718.ddns.net/ps/images/"+MainActivity.user+".jpg");
         userText.setText(MainActivity.user);
         chgNameBton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -482,7 +492,147 @@ public class ModifyFragment extends BaseFragment {
             if (resultCode == RESULT_OK){
                 Utils.FileDetail file;
                 file = getFileDetailFromUri(getContext(),data.getData());
+                String uri = Utils.getPath(getActivity(),data.getData());
+                new UploadPhoto(file.fileName,uri).execute();
             }
         }
+    }
+
+    public class UploadPhoto extends AsyncTask<Void, Void, Boolean> {
+
+        private final String name,uri;
+
+        UploadPhoto(String name, String uri){
+            this.name = name;
+            this.uri = uri;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+            DataOutputStream dos;
+            String lineEnd = "\r\n";
+            String twoHyphens = "--";
+            String boundary = "*****";
+            int bytesRead, bytesAvailable, bufferSize;
+            byte[] buffer;
+            int maxBufferSize = 1 * 1024 * 1024;
+
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/CambiarFotoPerfil");
+
+                File file = new File(uri);
+
+                FileInputStream fileInputStream = new FileInputStream(file);
+
+                client = (HttpsURLConnection) url.openConnection();
+
+
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+                client.setDoInput(true); // Allow Inputs
+                client.setDoOutput(true); // Allow Outputs
+                client.setUseCaches(false); // Don't use a Cached Copy
+
+                client.setRequestMethod("POST");
+                client.setRequestProperty("Connection", "Keep-Alive");
+                client.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                dos = new DataOutputStream(client.getOutputStream());
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"foto\";filename=\"" + name + "\"" + lineEnd);
+                dos.writeBytes("Content-Type: " + "image/jpg" + lineEnd);
+                dos.writeBytes("Content-Transfer-Encoding: binary" + lineEnd);
+                dos.writeBytes(lineEnd);
+
+                // create a buffer of maximum size
+                bytesAvailable = fileInputStream.available();
+                bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                buffer = new byte[bufferSize];
+                // read file and write it into form...
+                bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0) {
+
+                    dos.write(buffer, 0, bufferSize);
+                    bytesAvailable = fileInputStream.available();
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = fileInputStream.read(buffer, 0, bufferSize);
+
+                }
+
+                // send multipart form data necesssary after file data...
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+                // close streams
+                Log.e("Debug", "File is written");
+                fileInputStream.close();
+                dos.flush();
+                dos.close();
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                System.out.println(e);
+                return false;
+            }
+            try {
+
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+            HashMap<String,String> temp = new HashMap<String,String>();
+
+            if (success) {
+                new DownloadUserImageTask(user_image).execute("https://mewat1718.ddns.net/ps/images/"+MainActivity.user+".jpg");
+                Toast.makeText(getActivity().getApplicationContext(), "Imagen Cambiada",
+                        Toast.LENGTH_SHORT).show();
+            }
+            else{
+                Toast.makeText(getActivity().getApplicationContext(), "Something went wrong",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 }

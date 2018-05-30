@@ -17,6 +17,7 @@ public class Song {
     private String artista;
     private String genero;
     private Boolean like=false;
+    private String urlLocal="";
 
 
     /**
@@ -63,6 +64,12 @@ public class Song {
 
     public Boolean getLike() {
         return like;
+    }
+
+    public String getUrlLocal() { return urlLocal; }
+
+    public void setUrlLocal(String urlLocal) {
+        this.urlLocal = urlLocal;
     }
 
     public void setLike(Boolean like) {

@@ -26,6 +26,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.csd.MeWaT.R;
@@ -36,6 +37,8 @@ import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
 import com.csd.MeWaT.services.MusicService;
+import com.csd.MeWaT.utils.DownloadSongTask;
+import com.csd.MeWaT.utils.DownloadUserImageTask;
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
@@ -50,6 +53,7 @@ import org.json.JSONTokener;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -65,9 +69,10 @@ import javax.net.ssl.HttpsURLConnection;
 import butterknife.BindArray;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.internal.DebouncingOnClickListener;
 
 
-public class MainActivity extends AppCompatActivity implements BaseFragment.FragmentNavigation,FragNavController.TransactionListener, FragNavController.RootFragmentListener  {
+public class MainActivity extends AppCompatActivity implements BaseFragment.FragmentNavigation,FragNavController.TransactionListener, FragNavController.RootFragmentListener, MediaPlayer.OnCompletionListener {
 
 
 
@@ -117,10 +122,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
-
-    private MusicService musicSrv;
-    private Intent playIntent;
-    private boolean musicBound=false;
+    private static File cacheDir;
 
 
     public static ArrayList<Lista> lists = new ArrayList<>();
@@ -132,8 +134,21 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        resumed = false;
 
+        resumed = false;
+        mp=new MediaPlayer();
+        cacheDir = getCacheDir();
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
+
+        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                SongProgressBarTabPlayer.setProgress(0);
+                SongProgressBarTabPlayer.setMax(100);
+                mp.start();
+                updateProgressBar();
+            }
+        });
 
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
@@ -156,7 +171,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         songTitleTabPlayer = (TextView) findViewById(R.id.songTitleTabPlayer);
         playTabPlayer = (ImageButton) findViewById(R.id.playTabPlayer);
 
-
+        SongProgressBarTabPlayer.getProgressDrawable().setColorFilter(ContextCompat.getColor(this, R.color.blue), PorterDuff.Mode.SRC_IN );
 
         initToolbar();
 
@@ -170,6 +185,30 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
 
         switchTab(0);
+
+        playTabPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // check for already playing
+                if(songsList.size()>0) {
+                    if (mp.isPlaying()) {
+                        mp.pause();
+                        // Changing button image to play button
+                        playTabPlayer.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    } else {
+                        // Resume song
+                        if (mp != null) {
+                            if(!resumed)playSongDownload(songnumber);
+                            if(!SongProgressBarTabPlayer.isEnabled())SongProgressBarTabPlayer.setEnabled(true);
+                            mp.start();
+                            // Changing button image to pause button
+                            playTabPlayer.setImageResource(R.drawable.ic_pause_black_24dp);
+                        }
+                    }
+                }
+            }
+        });
+
 
         bottomTabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -210,40 +249,69 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     }
 
 
-    private ServiceConnection musicConnection = new ServiceConnection(){
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicBinder binder = (MusicBinder)service;
-            //get service
-            musicSrv = binder.getService();
-            //pass list
-            musicSrv.setSongsList(songsList);
-            musicBound = true;
+    public static void setSongsListAndStart(ArrayList<Song> put, int number){
+        boolean iguales = true;
+        for(int i = 0; i<songsList.size();i++)if(!songsList.get(i).equals(put.get(i)))iguales=false;
+        if(!iguales || songsList.size()==0) {
+            for (Song s : songsList) {
+                if (!s.getUrlLocal().equals("")) new File(s.getUrlLocal()).delete();
+            }
+            songsList = put;
+            songnumber=number;
+            new DownloadSongTask(cacheDir).execute();
+        }else{
+            playSongDownload(number);
         }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }
-    };
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent==null){
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
-        }
     }
 
-    public void  playSong(int songIndex) {
+
+    /**
+     * Update timer on seekbar
+     * */
+    public void updateProgressBar() {
+
+        mHandler.postDelayed(mUpdateTimeTask, 100);
+    }
+
+
+    /**
+     * Background Runnable thread
+     * */
+    private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            long totalDuration = mp.getDuration();
+            long currentDuration = mp.getCurrentPosition();
+
+            Utils utils = new Utils();
+            // Updating progress bar
+            int progress = (int)(utils.getProgressPercentage(currentDuration, totalDuration));
+            //Log.d("Progress", ""+progress);
+            SongProgressBarTabPlayer.setProgress(progress);
+
+            // Running this thread after 100 milliseconds
+            mHandler.postDelayed(this, 100);
+        }
+    };
+
+
+    public static void playSongDownload(int songIndex){
+        songnumber = songIndex;
+        if(songsList.get(songIndex).getUrlLocal().equals(""))new DownloadSongTask(cacheDir).execute();
+        else playSong(songIndex);
+    }
+
+
+    public static void  playSong(int songIndex) {
         // Play song
         try {
             resumed=true;
             mp.reset();
-            mp.setDataSource(songsList.get(songIndex).getUrl());
+            mp.setDataSource(songsList.get(songIndex).getUrlLocal());
             mp.prepareAsync();
             // Displaying Song title
             String songTitle = songsList.get(songIndex).getTitle();
@@ -265,8 +333,38 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
+
+
+    @Override
+    public void onCompletion(MediaPlayer mediaPlayer) {
+        // check for repeat is ON or OFF
+        if(isRepeat==2){
+            // repeat is on play same song again
+            playSongDownload(songnumber);
+        } else if(isShuffle){
+            // shuffle is on - play a random song
+            Random rand = new Random();
+            songnumber = rand.nextInt((songsList.size() - 1) - 0 + 1) + 0;
+            playSongDownload(songnumber);
+        } else{
+            // no repeat or shuffle ON - play next song
+            if(songnumber < (songsList.size() - 1)){
+                songnumber = songnumber + 1;
+                playSongDownload(songnumber);
+            }else{
+                if(isRepeat == 1){
+                    // play first song
+                    playSongDownload(0);
+                    songnumber = 0;
+                }
+            }
+        }
+    }
+
+
+
+
 
     private void initToolbar() {
         setSupportActionBar(toolbar);
@@ -680,10 +778,10 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     /**
      * Represents an asynchronous album search task
      */
-    public class getFollowingUsers extends AsyncTask<String, Void, Boolean> {
+    public static class getFollowingUsers extends AsyncTask<String, Void, Boolean> {
 
 
-        getFollowingUsers() {
+        public getFollowingUsers() {
 
         }
 
@@ -767,6 +865,13 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         protected void onCancelled() {
 
         }
+    }
+
+    @Override
+    public void onDestroy(){
+        super.onDestroy();
+        mp.stop();
+        mp.release();
     }
 
 }
