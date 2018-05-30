@@ -79,7 +79,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
 
         // Mediaplayer
-        mp = new MediaPlayer();
+        mp = MainActivity.mp;
 
         lastindex = MainActivity.songnumber;
         // Getting all songs list

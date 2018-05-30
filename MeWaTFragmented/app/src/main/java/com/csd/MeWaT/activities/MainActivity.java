@@ -35,13 +35,13 @@ import com.csd.MeWaT.fragments.ProfileFragment;
 import com.csd.MeWaT.fragments.SearchFragment;
 import com.csd.MeWaT.fragments.SocialFragment;
 import com.csd.MeWaT.fragments.UploadFragment;
-import com.csd.MeWaT.services.MusicService;
+
 import com.csd.MeWaT.utils.FragmentHistory;
 import com.csd.MeWaT.utils.Lista;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.Utils;
 import com.csd.MeWaT.views.FragNavController;
-import com.csd.MeWaT.services.MusicService.MusicBinder;
+
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -86,11 +86,14 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     @BindView(R.id.tab_player_layout)
     LinearLayout tabPlayerLayout;
 
-    public static ProgressBar SongProgressBarTabPlayer;
+    @BindView(R.id.songProgressBarTabPlayer)
+    ProgressBar SongProgressBarTabPlayer;
 
-    public static TextView songTitleTabPlayer;
+    @BindView(R.id.songTitleTabPlayer)
+    TextView songTitleTabPlayer;
 
-    public static ImageButton playTabPlayer;
+    @BindView(R.id.playTabPlayer)
+    ImageButton playTabPlayer;
 
     @BindView(R.id.expandPlayer)
     ImageButton extendPlayer;
@@ -118,9 +121,6 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
 
-    private MusicService musicSrv;
-    private Intent playIntent;
-    private boolean musicBound=false;
 
 
     public static ArrayList<Lista> lists = new ArrayList<>();
@@ -134,6 +134,20 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         super.onCreate(savedInstanceState);
         resumed = false;
 
+        mp=new MediaPlayer();
+
+        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+                mp.start();
+                SongProgressBarTabPlayer.setProgress(0);
+                SongProgressBarTabPlayer.setMax(100);
+                // Updating progress bar
+                updateProgressBar();
+            }
+        });
+
+        mp.setAudioStreamType(AudioManager.STREAM_MUSIC);
 
         idSesion=getIntent().getExtras().getString("idSesion");
         user = getIntent().getExtras().getString("user");
@@ -156,12 +170,16 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         songTitleTabPlayer = (TextView) findViewById(R.id.songTitleTabPlayer);
         playTabPlayer = (ImageButton) findViewById(R.id.playTabPlayer);
 
-
+        SongProgressBarTabPlayer.getProgressDrawable().setColorFilter(ContextCompat.getColor(this, R.color.blue), PorterDuff.Mode.SRC_IN );
 
         initToolbar();
 
         initTab();
         fragmentHistory = new FragmentHistory();
+
+        SongProgressBarTabPlayer.setProgress(0);
+        SongProgressBarTabPlayer.setMax(100);
+
 
         mNavController = FragNavController.newBuilder(savedInstanceState, getSupportFragmentManager(), R.id.content_frame)
                 .transactionListener(this)
@@ -198,6 +216,28 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
             }
         });
 
+        playTabPlayer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // check for already playing
+                if(songsList.size()>0) {
+                    if (mp.isPlaying()) {
+                        mp.pause();
+                        // Changing button image to play button
+                        playTabPlayer.setImageResource(R.drawable.ic_play_arrow_black_24dp);
+                    } else {
+                        // Resume song
+                        if (mp != null) {
+                            mp.start();
+                            if(!SongProgressBarTabPlayer.isEnabled())SongProgressBarTabPlayer.setEnabled(true);
+                           // playSong(songnumber);
+                            // Changing button image to pause button*/
+                            playTabPlayer.setImageResource(R.drawable.ic_pause_black_24dp);
+                        }
+                    }
+                }
+            }
+        });
         final Activity i = this;
         extendPlayer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -210,31 +250,13 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     }
 
 
-    private ServiceConnection musicConnection = new ServiceConnection(){
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicBinder binder = (MusicBinder)service;
-            //get service
-            musicSrv = binder.getService();
-            //pass list
-            musicSrv.setSongsList(songsList);
-            musicBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-        }
-    };
-
     @Override
     protected void onStart() {
         super.onStart();
-        if(playIntent==null){
-            playIntent = new Intent(this, MusicService.class);
-            bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
-            startService(playIntent);
+        if(mp.isPlaying()){
+            playTabPlayer.setImageResource(R.drawable.ic_pause_black_24dp);
+        }else{
+            playTabPlayer.setImageResource(R.drawable.ic_play_arrow_black_24dp);
         }
     }
 
@@ -267,6 +289,26 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         }
 
     }
+    public void updateProgressBar() {
+
+        mHandler.postDelayed(mUpdateTimeTask, 100);
+    }
+
+    private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            long totalDuration = mp.getDuration();
+            long currentDuration = mp.getCurrentPosition();
+
+            Utils utils = new Utils();
+            // Updating progress bar
+            int progress = (int)(utils.getProgressPercentage(currentDuration, totalDuration));
+            //Log.d("Progress", ""+progress);
+            SongProgressBarTabPlayer.setProgress(progress);
+
+            // Running this thread after 100 milliseconds
+            mHandler.postDelayed(this, 100);
+        }
+    };
 
     private void initToolbar() {
         setSupportActionBar(toolbar);
@@ -311,7 +353,14 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     @Override
     protected void onResume() {
+
         super.onResume();
+        if(mp.isPlaying()){
+            songTitleTabPlayer.setText(songsList.get(songnumber).getTitle());
+            updateProgressBar();
+        }
+
+
     }
 
 

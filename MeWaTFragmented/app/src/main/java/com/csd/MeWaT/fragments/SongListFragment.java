@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -74,6 +75,7 @@ public class SongListFragment extends BaseFragment {
     private String options;
     private ArrayList<Song> songsList = new ArrayList<>();
     private ArrayList<HashMap<String, String>> songsListData = new ArrayList<>();
+    private MediaPlayer mp;
 
 
     public static SongListFragment newInstanceListSongs(ArrayList<Song> instance) {
@@ -111,6 +113,7 @@ public class SongListFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
+        mp = MainActivity.mp;
     }
 
     @Override
@@ -153,6 +156,7 @@ public class SongListFragment extends BaseFragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                mp.stop();
                 MainActivity.songsList = songsList;
                 MainActivity.songnumber = (int) l;
                 Intent player = new Intent(getActivity(),PlayerActivity.class);
