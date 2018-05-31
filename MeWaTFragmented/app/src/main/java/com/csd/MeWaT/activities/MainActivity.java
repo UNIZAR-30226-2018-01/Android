@@ -119,10 +119,11 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
     public static Boolean isShuffle = false;
     public static Integer isRepeat = 0;
     public static Boolean resumed = false;
+    public static Boolean player = false;
 
     private FragNavController mNavController;
     private FragmentHistory fragmentHistory;
-    private static File cacheDir;
+    public static File cacheDir;
 
 
     public static ArrayList<Lista> lists = new ArrayList<>();
@@ -241,6 +242,7 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
         extendPlayer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                player=true;
                 Intent player = new Intent(i,PlayerActivity.class);
                 i.startActivity(player);
             }
@@ -338,27 +340,31 @@ public class MainActivity extends AppCompatActivity implements BaseFragment.Frag
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
-        // check for repeat is ON or OFF
-        if(isRepeat==2){
-            // repeat is on play same song again
-            playSongDownload(songnumber);
-        } else if(isShuffle){
-            // shuffle is on - play a random song
-            Random rand = new Random();
-            songnumber = rand.nextInt((songsList.size() - 1) - 0 + 1) + 0;
-            playSongDownload(songnumber);
-        } else{
-            // no repeat or shuffle ON - play next song
-            if(songnumber < (songsList.size() - 1)){
-                songnumber = songnumber + 1;
+        if(player) {
+            // check for repeat is ON or OFF
+            if (isRepeat == 2) {
+                // repeat is on play same song again
                 playSongDownload(songnumber);
-            }else{
-                if(isRepeat == 1){
-                    // play first song
-                    playSongDownload(0);
-                    songnumber = 0;
+            } else if (isShuffle) {
+                // shuffle is on - play a random song
+                Random rand = new Random();
+                songnumber = rand.nextInt((songsList.size() - 1) - 0 + 1) + 0;
+                playSongDownload(songnumber);
+            } else {
+                // no repeat or shuffle ON - play next song
+                if (songnumber < (songsList.size() - 1)) {
+                    songnumber = songnumber + 1;
+                    playSongDownload(songnumber);
+                } else {
+                    if (isRepeat == 1) {
+                        // play first song
+                        playSongDownload(0);
+                        songnumber = 0;
+                    }
                 }
             }
+        }else{
+            PlayerActivity.onCompletion(mediaPlayer);
         }
     }
 
