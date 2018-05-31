@@ -33,36 +33,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.utils.Library;
 
-import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLSocketFactory;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.GeneralSecurityException;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
-import android.content.Context;
-import android.util.Log;
-
 
 /**
  * A login screen that offers login via User/password.
@@ -82,7 +64,6 @@ public class LoginActivity extends AppCompatActivity {
     private View mProgressView;
     private View mLoginFormView;
     private String idSesion,Username;
-    static final int USER_SIGNUP = 2;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,7 +115,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 Intent SignUpActivity = new Intent(i,SignUpActivity.class);
-                i.startActivityForResult(SignUpActivity,USER_SIGNUP);
+                i.startActivityForResult(SignUpActivity, Library.USER_SIGNUP);
             }
         });
 
@@ -243,23 +224,6 @@ public class LoginActivity extends AppCompatActivity {
             mLoginFormView.setVisibility(show ? View.GONE : View.VISIBLE);
         }
     }
-    public static Boolean connectionIsHttps (String urlString){
-        if (urlString.regionMatches(0, "https", 0, 5)){
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    public static String getHostNameFromUrl (String urlString){
-        if (connectionIsHttps(urlString)){
-            return urlString.substring(8,urlString.indexOf("/", 8));
-        }
-        else{
-            return urlString.substring(7,urlString.indexOf("/", 7));
-        }
-    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -291,8 +255,8 @@ public class LoginActivity extends AppCompatActivity {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-
                 client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
 
                 Uri.Builder builder = new Uri.Builder()
                         .appendQueryParameter("nombre", mUser)
@@ -319,6 +283,7 @@ public class LoginActivity extends AppCompatActivity {
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
 
+
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
 
@@ -331,6 +296,7 @@ public class LoginActivity extends AppCompatActivity {
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
                 client.disconnect();
+
                 if (!result.has("error")){
                     Username = (String) result.get("login");
                     idSesion = (String) result.get("idSesion");
@@ -338,11 +304,9 @@ public class LoginActivity extends AppCompatActivity {
                     return false;
                 }
 
+
             }catch (IOException e){
                 System.out.println(e);
-            }
-            catch (IOException e){
-                Throwable s = e.getCause();
                 return false;
             } catch (JSONException e) {
                 return false;
@@ -355,8 +319,8 @@ public class LoginActivity extends AppCompatActivity {
             mAuthTask = null;
             showProgress(false);
 
+            SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
             if (success) {
-                SharedPreferences p = getPreferences(Context.MODE_PRIVATE);
 
                 p.edit().putBoolean("userAuthed",true).apply();
                 p.edit().putString("idSesion",idSesion).apply();
@@ -365,9 +329,11 @@ public class LoginActivity extends AppCompatActivity {
                 Intent MainActivity = new Intent( LoginActivity.this, MainActivity.class);
                 MainActivity.putExtra("idSesion",idSesion);
                 MainActivity.putExtra("user",Username);
+                MainActivity.putExtra("password",mPassword);
                 LoginActivity.this.startActivity(MainActivity);
                 finish();
             } else {
+                p.edit().putBoolean("userAuthed",false).apply();
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
@@ -382,7 +348,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == USER_SIGNUP){
+        if (requestCode == Library.USER_SIGNUP){
             if(resultCode == Activity.RESULT_OK){
                 Intent returnIntent = new Intent();
                 String pass = returnIntent.getStringExtra("pass");
@@ -392,7 +358,8 @@ public class LoginActivity extends AppCompatActivity {
             }else{
                 Toast.makeText(this.getApplicationContext(), "Error Signing Up", Toast.LENGTH_SHORT).show();
             }
-        }
+        }else
+            super.onActivityResult(requestCode,resultCode,data);
     }
 
 }

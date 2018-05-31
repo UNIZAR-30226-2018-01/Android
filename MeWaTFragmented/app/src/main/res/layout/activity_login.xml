@@ -38,7 +38,7 @@
                 android:id="@+id/imageView"
                 android:layout_width="240dp"
                 android:layout_height="240dp"
-                app:srcCompat="@drawable/logo"
+                app:srcCompat="@drawable/ic_launcher"
                 android:layout_gravity="center_horizontal"/>
 
             <android.support.design.widget.TextInputLayout

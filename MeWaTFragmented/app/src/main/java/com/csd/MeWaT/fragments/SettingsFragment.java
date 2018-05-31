@@ -6,20 +6,22 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.text.BoringLayout;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
-import com.csd.MeWaT.utils.Utils;
+import com.csd.MeWaT.utils.Song;
 
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -30,38 +32,32 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.ArrayList;
 
+import javax.microedition.khronos.egl.EGLDisplay;
 import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-import static android.app.Activity.RESULT_OK;
-import static com.csd.MeWaT.utils.Utils.getFileDetailFromUri;
 
-/**
- * Created by mengd on 21/05/2018.
- */
+public class SettingsFragment extends BaseFragment{
 
-public class ModifyFragment extends BaseFragment {
     /**********************************************************************
      * Code for edit profile
      **********************************************************************/
 
-    @BindView(R.id.userChange)
-    EditText userText;
+    @BindView(R.id.userChange) EditText userText;
     @BindView(R.id.oldPswd) EditText oldPasword;
     @BindView(R.id.pswdChange) EditText pasText;
     @BindView(R.id.pswdChangeRep) EditText pasRepText;
-    @BindView(R.id.btton_change_icon)
-    Button chgIconBton;
+    @BindView(R.id.btton_change_icon) Button chgIconBton;
     @BindView(R.id.btton_change_name) Button chgNameBton;
     @BindView(R.id.btton_change_paswd) Button chgPswdBton;
-
-    public static final int PICK_IMAGE = 8;
 
 
     @Override
@@ -73,13 +69,21 @@ public class ModifyFragment extends BaseFragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view=inflater.inflate(R.layout.fragment_edit_profile, container, false);
         ButterKnife.bind(this, view);
+
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
         userText.setText(MainActivity.user);
         chgNameBton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String name = userText.getText().toString();
                 if (!name.isEmpty()) {
-                    ModifyFragment.ChangeNameTask changTask = new ModifyFragment.ChangeNameTask(name);
+                    ChangeNameTask changTask = new ChangeNameTask(name);
                     changTask.execute();
                 }
                 else {
@@ -97,7 +101,7 @@ public class ModifyFragment extends BaseFragment {
                 if (!pasword.isEmpty()){
                     if (!old.isEmpty()) {
                         if (pasword.equals(paswordRep)) {
-                            ModifyFragment.ChangePaswdTask changTask = new ModifyFragment.ChangePaswdTask(old, pasword, paswordRep);
+                            ChangePaswdTask changTask = new ChangePaswdTask(old, pasword, paswordRep);
                             changTask.execute();
                         } else {
                             pasRepText.setError("The password isnt the same");
@@ -111,23 +115,6 @@ public class ModifyFragment extends BaseFragment {
                 }
             }
         });
-
-        chgIconBton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent getIntent = new Intent(Intent.ACTION_GET_CONTENT);
-                getIntent.setType("image/*");
-
-                Intent pickIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                pickIntent.setType("image/*");
-
-                Intent chooserIntent = Intent.createChooser(getIntent, "Select Image");
-                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[] {pickIntent});
-
-                startActivityForResult(chooserIntent, PICK_IMAGE);
-            }
-        });
-        return view;
     }
 
     public class ChangeNameTask extends AsyncTask<Void, Void, Boolean> {
@@ -152,7 +139,7 @@ public class ModifyFragment extends BaseFragment {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
@@ -178,7 +165,7 @@ public class ModifyFragment extends BaseFragment {
 
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-
+                client.disconnect();
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -191,7 +178,6 @@ public class ModifyFragment extends BaseFragment {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
-                client.disconnect();
                 if (result.has("error")){
                     return false;
                 }else{
@@ -244,9 +230,8 @@ public class ModifyFragment extends BaseFragment {
                 client.setRequestMethod("POST");
                 client.setRequestProperty("", System.getProperty("https.agent"));
                 client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
-                client.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
                 client.setDoOutput(true);
-
                 client.setRequestProperty("Cookie", "login=" + MainActivity.user +
                         "; idSesion=" + MainActivity.idSesion);
                 Uri.Builder builder = new Uri.Builder()
@@ -273,7 +258,7 @@ public class ModifyFragment extends BaseFragment {
 
             try {
                 inputStream = new InputStreamReader(client.getInputStream());
-
+                client.disconnect();
 
                 BufferedReader reader = new BufferedReader(inputStream);
                 StringBuilder builder = new StringBuilder();
@@ -286,8 +271,6 @@ public class ModifyFragment extends BaseFragment {
                 String resultStr = builder.toString();
                 JSONTokener tokener = new JSONTokener(resultStr);
                 JSONObject result = new JSONObject(tokener);
-
-                client.disconnect();
                 if (result.has("error")){
                     return false;
                 }
@@ -314,17 +297,6 @@ public class ModifyFragment extends BaseFragment {
                 pasText.getText().clear();
                 pasRepText.getText().clear();
 
-            }
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data)
-    {
-        if (requestCode == PICK_IMAGE) {
-            if (resultCode == RESULT_OK){
-                Utils.FileDetail file;
-                file = getFileDetailFromUri(getContext(),data.getData());
             }
         }
     }

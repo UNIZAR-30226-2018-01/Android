@@ -1,17 +1,44 @@
 package com.csd.MeWaT.fragments;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.Toolbar;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.csd.MeWaT.R;
 import com.csd.MeWaT.activities.MainActivity;
+import com.csd.MeWaT.utils.DownloadUserImageTask;
+import com.csd.MeWaT.utils.Lista;
+import com.csd.MeWaT.utils.Song;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,8 +53,28 @@ public class ProfileFragment extends BaseFragment{
     @BindView(R.id.user_image)
     ImageView user_image;
 
-    @BindView(R.id.settingsButton)
-    ImageButton settingsButton;
+    @BindView(R.id.favoriteButton)
+    Button favButton;
+
+    @BindView(R.id.myListButton)
+    Button myListButton;
+
+    @BindView(R.id.followedButton)
+    Button followedButton;
+
+    @BindView(R.id.followingButton)
+    Button followingButton;
+
+
+
+    @BindView(R.id.historyButton)
+    Button historyButton;
+
+    private ArrayList<Song> songResultList = new ArrayList<>();
+
+    private ArrayList<Lista> ListResultList = new ArrayList<>();
+
+    private ArrayList<HashMap<String,String>> listAdapterUser;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -43,7 +90,7 @@ public class ProfileFragment extends BaseFragment{
         ButterKnife.bind(this, view);
 
 
-        username.setText(MainActivity.user);
+
 
         return view;
     }
@@ -53,13 +100,406 @@ public class ProfileFragment extends BaseFragment{
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        setHasOptionsMenu(true);
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
+        new DownloadUserImageTask(user_image).execute("https://mewat1718.ddns.net/ps/images/"+MainActivity.user+".jpg");
+        username.setText(MainActivity.user);
+
+
+        myListButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
+                new SearchListByUser().execute();
 
             }
         });
+
+        followedButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Mis Seguidores");
+                new SearchTaskByUser().execute("VerSeguidores");
+            }
+        });
+
+        followingButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Seguidos");
+                new SearchTaskByUser().execute("VerSeguidos");
+
+            }
+        });
+
+        historyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Historial");
+                new SearchTaskBySong(null).execute("EscuchadasRecientemente");
+
+            }
+        });
+
+        favButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle("Favoritos");
+                new SearchTaskBySong("Favoritos").execute("VerLista");
+            }
+        });
+
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.actionbar_settings, menu);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        switch(item.getItemId()){
+            case R.id.settingsbutton:
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(new SettingsFragment());
+                }
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+
+
+    }
+
+    /**
+     * Represents an asynchronous album search task
+     */
+    public class SearchTaskByUser extends AsyncTask<String, Void, Boolean> {
+
+        private ArrayList<String> userResultList;
+
+        SearchTaskByUser() {
+
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            userResultList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/"+params[0]);
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+                    JSONArray resultArray = result.getJSONArray("listaDeSeguidores");
+                    String search = params[0].equals("VerSeguidores")?"nombreSeguidor":"nombreSeguido";
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        userResultList.add( jsObj.getString(search));
+                    }
+
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                listAdapterUser.clear();
+                for(int i = 0; i<4 && i<userResultList.size();i++){
+                    HashMap<String,String> temp = new HashMap<>();
+                    temp.put("user",userResultList.get(i));
+                    listAdapterUser.add(temp);
+                }
+                if (listAdapterUser.size()>0){
+                    if(mFragmentNavigation != null) {
+                        mFragmentNavigation.pushFragment(UserListFragment.newInstance(listAdapterUser));
+                    }
+                }
+            } else {
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous song search
+     */
+    public class SearchTaskBySong extends AsyncTask<String, Void, Boolean> {
+
+
+        String List = null;
+
+        SearchTaskBySong( String list) {
+            List = list;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            songResultList = new ArrayList<>();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/"+params[0]);
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                if(List != null) {
+                    Uri.Builder builder = new Uri.Builder()
+                            .appendQueryParameter("nombreLista", List)
+                            .appendQueryParameter("nombreCreadorLista", MainActivity.user);             //Añade parametros
+                    String query = builder.build().getEncodedQuery();
+
+                    OutputStream os = client.getOutputStream();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(os, "UTF-8"));
+                    writer.write(query);
+                    writer.flush();
+                    writer.close();
+                }
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("canciones");
+                    for(int i = 0; i<resultArray.length();i++){
+                        JSONObject jsObj = resultArray.getJSONObject(i);
+                        songResultList.add(new Song(jsObj.getString("tituloCancion"),
+                                        jsObj.getString("nombreAlbum"),
+                                        jsObj.getString("nombreArtista"),
+                                        jsObj.getString("genero"),
+                                        jsObj.getString("ruta").replace("/usr/local/apache-tomcat-9.0.7/webapps","https://mewat1718.ddns.net"),
+                                        jsObj.getString("ruta_imagen").replace("..","https://mewat1718.ddns.net")
+                                )
+                        );
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(SongListFragment.newInstanceListSongs(songResultList));
+                }
+            } else {
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
+    }
+
+    /**
+     * Represents an asynchronous song search
+     */
+    public class SearchListByUser extends AsyncTask<String, Void, Boolean> {
+
+
+        SearchListByUser(){}
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            // TODO: attempt authentication against a network service.
+            URL url;
+            HttpsURLConnection client = null;
+            InputStreamReader inputStream;
+
+
+            ListResultList.clear();
+            try {
+                url = new URL("https://mewat1718.ddns.net/ps/MostrarListasReproduccion");
+
+                client = (HttpsURLConnection) url.openConnection();
+                client.setRequestMethod("POST");
+                client.setRequestProperty("", System.getProperty("https.agent"));
+                client.setSSLSocketFactory(HttpsURLConnection.getDefaultSSLSocketFactory());
+                client.setHostnameVerifier(org.apache.http.conn.ssl.SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+                client.setDoOutput(true);
+
+                client.setRequestProperty("Cookie", "login=" + MainActivity.user +
+                        "; idSesion=" + MainActivity.idSesion);
+
+                Uri.Builder builder = new Uri.Builder()
+                        .appendQueryParameter("user", MainActivity.user)
+                        .appendQueryParameter("contrasenya", MainActivity.password);             //Añade parametros
+                String query = builder.build().getEncodedQuery();
+
+                OutputStream os = client.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(query);
+                writer.flush();
+                writer.close();
+
+                int responseCode = client.getResponseCode();
+                System.out.println("\nSending 'Get' request to URL : " +    url+"--"+responseCode);
+            } catch (MalformedURLException e) {
+                return false;
+            } catch (SocketTimeoutException e) {
+                return false;
+            }catch (IOException e) {
+                return false;
+            }
+            try {
+                inputStream = new InputStreamReader(client.getInputStream());
+
+
+                BufferedReader reader = new BufferedReader(inputStream);
+                StringBuilder builder = new StringBuilder();
+
+                for (String line = null; (line = reader.readLine()) != null ; ) {
+                    builder.append(line).append("\n");
+                }
+
+                // Parse into JSONObject
+                String resultStr = builder.toString();
+                JSONTokener tokener = new JSONTokener(resultStr);
+                JSONObject result = new JSONObject(tokener);
+
+                client.disconnect();
+                if (!result.has("error")){
+
+                    JSONArray resultArray = result.getJSONArray("nombre");
+                    for(int i = 0; i<resultArray.length();i++){
+                        if(!resultArray.getString(i).equals("Favoritos"))ListResultList.add(new Lista(resultArray.getString(i),MainActivity.user));
+                    }
+                }else{
+                    return false;
+                }
+
+
+            }catch (IOException e){
+                Throwable s = e.getCause();
+                return false;
+            } catch (JSONException e) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+                if(mFragmentNavigation != null) {
+                    mFragmentNavigation.pushFragment(ListListFragment.newInstance(ListResultList));
+                }
+            } else {
+
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+
+        }
     }
 
 

@@ -1,9 +1,9 @@
 package com.csd.MeWaT.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.media.MediaPlayer;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.content.ContextCompat;
@@ -15,13 +15,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.csd.MeWaT.R;
+import com.csd.MeWaT.utils.DownloadSongImageTask;
+import com.csd.MeWaT.utils.Library;
 import com.csd.MeWaT.utils.Song;
 import com.csd.MeWaT.utils.SongsManager;
 import com.csd.MeWaT.utils.Utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Random;
 
 import butterknife.BindView;
@@ -41,7 +42,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     ImageButton btnRepeat;
     @BindView(R.id.btnShuffle)
     ImageButton btnShuffle;
-
+    @BindView(R.id.album_thumbnail)
+    de.hdodenhof.circleimageview.CircleImageView albumThumbnail;
     @BindView(R.id.minimizePlayer)
     ImageButton minimizePlayer;
 
@@ -55,8 +57,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     @BindView(R.id.songTitle)
     TextView songTitleLabel;
-    @BindView(R.id.albumTitle)
+    @BindView(R.id.songAlbum)
     TextView songAlbumLabel;
+    @BindView(R.id.songArtist)
+    TextView songArtistLabel;
 
     // Media Player
     private Integer lastindex;
@@ -84,6 +88,19 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         setContentView(R.layout.activity_player);
         ButterKnife.bind(this);
 
+        mp.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mediaPlayer) {
+
+                songProgressBar.setEnabled(true);
+                songProgressBar.setProgress(0);
+                songProgressBar.setMax(100);
+                mp.start();
+
+                // Updating progress bar
+                updateProgressBar();
+            }
+        });
 
         btnRepeat.setImageResource(R.drawable.ic_repeat_black_24dp);
 
@@ -236,7 +253,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             @Override
             public void onClick(View arg0) {
                 Intent i = new Intent(getApplicationContext(), PlayListActivity.class);
-                startActivityForResult(i, 100);
+                startActivityForResult(i, Library.PLAYLIST);
             }
         });
 
@@ -255,11 +272,15 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     @Override
     public void onActivityResult(int requestCode,
                                     int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == 100){
-            currentSongIndex = data.getExtras().getInt("songIndex");
-            // play selected song
-            playSong(currentSongIndex);
+
+        if(requestCode == Library.PLAYLIST){
+            if(resultCode == Activity.RESULT_OK) {
+                currentSongIndex = data.getExtras().getInt("songIndex");
+                // play selected song
+                playSong(currentSongIndex);
+            }
+        }else{
+            super.onActivityResult(requestCode, resultCode, data);
         }
 
     }
@@ -272,13 +293,19 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         // Play song
         try {
             MainActivity.resumed=true;
+            songProgressBar.setEnabled(true);
             mp.reset();
             mp.setDataSource(songsList.get(songIndex).getUrl());
-            mp.prepare();
-            mp.start();
+            mp.prepareAsync();
             // Displaying Song title
-            String songTitle = songsList.get(songIndex).getTitle();
-            songTitleLabel.setText(songTitle);
+            songTitleLabel.setText(songsList.get(songIndex).getTitle());
+            songAlbumLabel.setText(songsList.get(songIndex).getAlbum());
+            songArtistLabel.setText(songsList.get(songIndex).getArtist());
+
+            DownloadSongImageTask downloadSongImageTask = new DownloadSongImageTask(albumThumbnail);
+            downloadSongImageTask.execute(songsList.get(songIndex).getUrlImg());
+
+
             MainActivity.songnumber=songIndex;
 
             // Changing Button Image to pause image
@@ -289,7 +316,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             songProgressBar.setMax(100);
 
             // Updating progress bar
-            updateProgressBar();
+            //updateProgressBar();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
         } catch (IllegalStateException e) {
@@ -402,4 +429,4 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         super.onDestroy();
     }
 
-}
+  }

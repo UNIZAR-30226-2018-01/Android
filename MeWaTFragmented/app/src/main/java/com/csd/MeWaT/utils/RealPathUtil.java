@@ -18,12 +18,12 @@ public class RealPathUtil {
         // Split at colon, use second item in the array
         String id = wholeID.split(":")[1];
 
-        String[] column = { MediaStore.Images.Media.DATA };
+        String[] column = { MediaStore.Audio.Media.DATA };
 
         // where id is equal to
         String sel = MediaStore.Images.Media._ID + "=?";
 
-        Cursor cursor = context.getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+        Cursor cursor = context.getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
                 column, sel, new String[]{ id }, null);
 
         int columnIndex = cursor.getColumnIndex(column[0]);
@@ -38,7 +38,7 @@ public class RealPathUtil {
 
     @SuppressLint("NewApi")
     public static String getRealPathFromURI_API11to18(Context context, Uri contentUri) {
-        String[] proj = { MediaStore.Images.Media.DATA };
+        String[] proj = { MediaStore.Audio.Media.DATA };
         String result = null;
 
         CursorLoader cursorLoader = new CursorLoader(
@@ -48,7 +48,7 @@ public class RealPathUtil {
 
         if(cursor != null){
             int column_index =
-                    cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
             cursor.moveToFirst();
             result = cursor.getString(column_index);
         }
@@ -56,10 +56,10 @@ public class RealPathUtil {
     }
 
     public static String getRealPathFromURI_BelowAPI11(Context context, Uri contentUri){
-        String[] proj = { MediaStore.Images.Media.DATA };
+        String[] proj = { MediaStore.Audio.Media.DATA };
         Cursor cursor = context.getContentResolver().query(contentUri, proj, null, null, null);
         int column_index
-                = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA);
         cursor.moveToFirst();
         return cursor.getString(column_index);
     }
